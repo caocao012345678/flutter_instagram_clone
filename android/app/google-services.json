@@ -1,0 +1,67 @@
+{
+  "project_info": {
+    "project_number": "745395520863",
+    "project_id": "testappfromgit1",
+    "storage_bucket": "testappfromgit1.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:745395520863:android:c610dbc66c9e6e2f3be2ea",
+        "android_client_info": {
+          "package_name": "com.example.flutter_instagram_clone"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCjCk5royl0biDgHd1RaVv7N90crGlDHR0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:745395520863:android:a0527734ff2d91943be2ea",
+        "android_client_info": {
+          "package_name": "com.example.instagram_flutter"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCjCk5royl0biDgHd1RaVv7N90crGlDHR0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:745395520863:android:816522d33ea156663be2ea",
+        "android_client_info": {
+          "package_name": "com.thealphamerc.flutter_twitter_clone"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCjCk5royl0biDgHd1RaVv7N90crGlDHR0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
