@@ -81,6 +81,49 @@ class _ProfileScreenState extends State<ProfileScreen> {
       Navigator.pushReplacementNamed(context, '/login');
     }
   }
+  Widget buildStatColumn({
+    required String label,
+    required String field,
+    required String uid,
+    required BuildContext context,
+    VoidCallback? onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: StreamBuilder<DocumentSnapshot>(
+        stream: FirebaseFirestore.instance.collection('users').doc(uid).snapshots(),
+        builder: (context, snapshot) {
+          String displayText = '0';
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            displayText = '...';
+          } else if (snapshot.hasData && snapshot.data!.data() != null) {
+            final data = snapshot.data!.data() as Map<String, dynamic>;
+            if (data.containsKey(field)) {
+              displayText = (data[field] as List).length.toString();
+            }
+          }
+
+          return Column(
+            children: [
+              Text(
+                displayText,
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16.sp,
+                ),
+              ),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 16.sp,
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -109,9 +152,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     .snapshots(),
                 builder: (context, snapshot) {
                   if (!snapshot.hasData) {
-                    return SliverToBoxAdapter(
+                    return const SliverToBoxAdapter(
                         child:
-                        const Center(child: CircularProgressIndicator()));
+                        Center(child: CircularProgressIndicator()));
                   }
                   post_lenght = snapshot.data!.docs.length;
                   return SliverGrid(
@@ -143,7 +186,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  // ignore: non_constant_identifier_names
   Widget Head(Usermodel user) {
     return Container(
       color: Colors.white,
@@ -154,18 +196,35 @@ class _ProfileScreenState extends State<ProfileScreen> {
             padding: EdgeInsets.only(top: 5.h),
             child: Row(
               children: [
-                SizedBox(width: 15.w),
+                if (widget.Uid != _auth.currentUser?.uid)
+                  IconButton(
+                    icon: const Icon(
+                      Icons.arrow_back,
+                      color: Colors.black,
+                      size: 27,
+                    ),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                  ),
+                if (widget.Uid != _auth.currentUser?.uid) ...[
+                  SizedBox(width: 10.w),
+                ] else ...[
+                  SizedBox(width: 15.w),
+                ],
                 Text(
                   user.username,
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 23,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                Spacer(),
+
+                const Spacer(),
+
                 if (widget.Uid == _auth.currentUser?.uid)
                   IconButton(
-                    icon: Icon(
+                    icon: const Icon(
                       Icons.logout,
                       color: Colors.black,
                       size: 27,
@@ -175,100 +234,86 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ],
             ),
           ),
-
           Row(
             children: [
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: 13.w, vertical: 10.h),
-                child: ClipOval(
-                  child: SizedBox(
-                    width: 80.w,
-                    height: 80.h,
-                    child: CachedImage(user.profile),
-                  ),
-                ),
+              StreamBuilder(
+                stream: FirebaseFirestore.instance
+                    .collection('users')
+                    .doc(widget.Uid)
+                    .snapshots(),
+                builder: (context, snapshot) {
+                  if (!snapshot.hasData) {
+                    return CircularProgressIndicator();
+                  }
+                  var user = snapshot.data!;
+                  return Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 13.w, vertical: 10.h),
+                    child: ClipOval(
+                      child: SizedBox(
+                        width: 80.w,
+                        height: 80.h,
+                        child: CachedImage(user['profile']),
+                      ),
+                    ),
+                  );
+                },
               ),
-
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      SizedBox(width: 35.w),
-                      Text(
-                        post_lenght.toString(),
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16.sp,
-                        ),
+                      SizedBox(width: 15),
+                      Column(
+                        children: [
+                          Text(
+                            post_lenght.toString(),
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16.sp,
+                            ),
+                          ),
+                          Text(
+                            'Posts',
+                            style: TextStyle(
+                              fontSize: 16.sp,
+                            ),
+                          ),
+                        ],
                       ),
-                      SizedBox(width: 53.w),
-                      Text(
-                        user.followers.length.toString(),
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16.sp,
-                        ),
-                      ),
-                      SizedBox(width: 70.w),
-                      Text(
-                        user.following.length.toString(),
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16.sp,
-                        ),
-                      ),
-                      SizedBox(width: 30.w),
-
-                    ],
-                  ),
-                  Row(
-                    children: [
-                      SizedBox(width: 30.w),
-                      Text(
-                        'Posts',
-                        style: TextStyle(
-                          fontSize: 13.sp,
-                        ),
-                      ),
-                      SizedBox(width: 25.w),
-                      GestureDetector(
+                      SizedBox(width: 15),
+                      // Followers
+                      buildStatColumn(
+                        label: 'Followers',
+                        field: 'followers',
+                        uid: widget.Uid,
+                        context: context,
                         onTap: () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(
-                              builder: (context) => FollowersScreen(),
-                            ),
+                            MaterialPageRoute(builder: (context) => FollowersScreen()),
                           );
                         },
-                        child: Text(
-                          'Followers',
-                          style: TextStyle(
-                            fontSize: 13.sp,
-                          ),
-                        ),
                       ),
-                      SizedBox(width: 19.w),
-                      GestureDetector(
+                      SizedBox(width: 15),
+                      // Following
+                      buildStatColumn(
+                        label: 'Following',
+                        field: 'following',
+                        uid: widget.Uid,
+                        context: context,
                         onTap: () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(
-                              builder: (context) => FollowingScreen(),
-                            ),
+                            MaterialPageRoute(builder: (context) => FollowingScreen()),
                           );
                         },
-                        child: Text(
-                          'Following',
-                          style: TextStyle(
-                            fontSize: 13.sp,
-                          ),
-                        ),
                       ),
                     ],
                   ),
                 ],
-              )
+              ),
             ],
           ),
           Padding(
@@ -328,12 +373,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                       );
                     },
-                    child: Text(
+                    child: const Text(
                       'Edit Your Profile',
                       style: TextStyle(color: Colors.black),
                     ),
                   )
-                      : Text(
+                      : const Text(
                     'Follow',
                     style: TextStyle(color: Colors.white),
                   ),
@@ -365,7 +410,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             borderRadius: BorderRadius.circular(5.r),
                             border: Border.all(color: Colors.grey.shade200),
                           ),
-                          child: Text('Unfollow')),
+                          child: const Text('Unfollow')),
                     ),
                   ),
                   SizedBox(width: 8.w),
@@ -379,7 +424,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         borderRadius: BorderRadius.circular(5.r),
                         border: Border.all(color: Colors.grey.shade200),
                       ),
-                      child: Text(
+                      child: const Text(
                         'Message',
                         style: TextStyle(color: Colors.black),
                       ),

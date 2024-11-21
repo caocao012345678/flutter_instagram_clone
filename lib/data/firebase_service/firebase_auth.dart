@@ -30,6 +30,7 @@ class Authentication {
   }) async {
     String URL;
     try {
+
       if (email.isNotEmpty &&
           password.isNotEmpty &&
           username.isNotEmpty &&

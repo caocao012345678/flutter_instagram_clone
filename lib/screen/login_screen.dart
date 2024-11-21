@@ -37,7 +37,7 @@ class _LoginScreenState extends State<LoginScreen> {
             SizedBox(height: 120.h),
             Textfild(email, email_F, 'Email', Icons.email),
             SizedBox(height: 15.h),
-            Textfild(password, password_F, 'Password', Icons.lock),
+            Textfild(password, password_F, 'Password', Icons.lock, isPassword: true),
             SizedBox(height: 15.h),
             forget(),
             SizedBox(height: 15.h),
@@ -125,7 +125,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Padding Textfild(TextEditingController controll, FocusNode focusNode,
-      String typename, IconData icon) {
+      String typename, IconData icon,{bool isPassword = false}) {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 10.w),
       child: Container(
@@ -138,6 +138,7 @@ class _LoginScreenState extends State<LoginScreen> {
           style: TextStyle(fontSize: 18.sp, color: Colors.black),
           controller: controll,
           focusNode: focusNode,
+          obscureText: isPassword,
           decoration: InputDecoration(
             hintText: typename,
             prefixIcon: Icon(

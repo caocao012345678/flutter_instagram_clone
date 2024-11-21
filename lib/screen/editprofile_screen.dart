@@ -8,6 +8,8 @@ import 'package:image_picker/image_picker.dart';
 import 'package:flutter_instagram_clone/util/image_cached.dart';
 import 'package:flutter_instagram_clone/data/firebase_service/firestor.dart';
 
+import '../data/firebase_service/storage.dart';
+
 class EditProfileScreen extends StatefulWidget {
   @override
   State<EditProfileScreen> createState() => _EditProfileScreenState();
@@ -28,7 +30,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     _loadUserData();
   }
 
-  // Load user data from Firestore
   _loadUserData() async {
     DocumentSnapshot userDoc = await _firebaseFirestore
         .collection('users')
@@ -38,7 +39,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     setState(() {
       _usernameController.text = userDoc['username'];
       _bioController.text = userDoc['bio'];
-      _profileImageUrl = userDoc['profileImage'] ?? '';
+      _profileImageUrl = userDoc['profile'];
     });
   }
 
@@ -54,13 +55,24 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     }
   }
 
-  // Save changes to Firestore
+
   _saveChanges() async {
-    await _firebaseFirestore.collection('users').doc(_auth.currentUser!.uid).update({
-      'username': _usernameController.text,
-      'bio': _bioController.text,
-      'profileImage': _profileImageUrl,  // Update the profile image URL
-    });
+    String profileImageUrlToSave;
+
+    if (_isImagePicked) {
+      File file = File(_profileImageUrl);
+      profileImageUrlToSave = await StorageMethod().uploadImageToStorage('Profile', file);
+      await _firebaseFirestore.collection('users').doc(_auth.currentUser!.uid).update({
+        'username': _usernameController.text,
+        'bio': _bioController.text,
+        'profile': profileImageUrlToSave,
+      });
+    } else {
+      await _firebaseFirestore.collection('users').doc(_auth.currentUser!.uid).update({
+        'username': _usernameController.text,
+        'bio': _bioController.text,
+      });
+    }
 
     Navigator.pop(context);
   }
@@ -72,10 +84,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         title: Text('Edit Profile'),
         backgroundColor: Colors.white,
         actions: [
-          IconButton(
-            icon: Icon(Icons.save, color: Colors.black),
-            onPressed: _saveChanges,
-          ),
+          // IconButton(
+          //   icon: Icon(Icons.save, color: Colors.black),
+          //   onPressed: _saveChanges,
+          // ),
         ],
       ),
       body: Padding(
@@ -86,12 +98,34 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               onTap: _pickImage,
               child: CircleAvatar(
                 radius: 60.w,
-                backgroundImage: _profileImageUrl.isNotEmpty
-                    ? NetworkImage(_profileImageUrl)
-                    : AssetImage('assets/default_avatar.png') as ImageProvider<Object>?,
+                backgroundColor: Colors.grey[200],
+                child: _isImagePicked ?
+                  ClipOval(
+                    child:
+                    Image.file(
+                      File(_profileImageUrl),
+                      fit: BoxFit.cover,
+                      width: 120.w,
+                      height: 120.h,
+                    ),
+                  )
+                 :
+                  ClipOval(
+                    child: _profileImageUrl != ''
+                        ? SizedBox(
+                            width: 120.w,
+                            height: 120.h,
+                            child: CachedImage(_profileImageUrl),
+                          )
+                        : Image.asset(
+                      'images/person.png',
+                      fit: BoxFit.cover,
+                      width: 120.w,
+                      height: 120.h,
+                    ),
+                  )
               ),
             ),
-
 
             SizedBox(height: 16.h),
             TextField(

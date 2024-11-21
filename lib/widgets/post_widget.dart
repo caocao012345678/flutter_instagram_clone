@@ -91,21 +91,27 @@ class _PostWidgetState extends State<PostWidget> {
                   },
                   itemBuilder: (BuildContext context) {
                     bool isOwner = widget.snapshot['uid'] == FirebaseAuth.instance.currentUser!.uid;
-
                     return [
-                      if (isOwner)
+                      if (isOwner) ...[
                         const PopupMenuItem<String>(
                           value: 'Delete',
                           child: Text('Delete'),
                         ),
-                      const PopupMenuItem<String>(
-                        value: 'Block',
-                        child: Text('Block'),
-                      ),
-                      const PopupMenuItem<String>(
-                        value: 'Message',
-                        child: Text('Message'),
-                      ),
+                        const PopupMenuItem<String>(
+                          value: 'Edit',
+                          child: Text('Edit'),
+                        ),
+                      ],
+                      if (!isOwner) ...[
+                        const PopupMenuItem<String>(
+                          value: 'Block',
+                          child: Text('Block'),
+                        ),
+                        const PopupMenuItem<String>(
+                          value: 'Message',
+                          child: Text('Message'),
+                        ),
+                      ],
                     ];
                   },
                 ),
@@ -215,19 +221,19 @@ class _PostWidgetState extends State<PostWidget> {
                       height: 28.h,
                     ),
                   ),
-                  SizedBox(width: 17.w),
-                  Image.asset(
-                    'images/send.jpg',
-                    height: 28.h,
-                  ),
-                  const Spacer(),
-                  Padding(
-                    padding: EdgeInsets.only(right: 15.w),
-                    child: Image.asset(
-                      'images/save.png',
-                      height: 28.h,
-                    ),
-                  ),
+                  // SizedBox(width: 17.w),
+                  // Image.asset(
+                  //   'images/send.jpg',
+                  //   height: 28.h,
+                  // ),
+                  // const Spacer(),
+                  // Padding(
+                  //   padding: EdgeInsets.only(right: 15.w),
+                  //   child: Image.asset(
+                  //     'images/save.png',
+                  //     height: 28.h,
+                  //   ),
+                  // ),
                 ],
               ),
               Padding(

@@ -24,7 +24,6 @@ class _FollowingScreenState extends State<FollowingScreen> {
     _loadFollowingData();
   }
 
-  // Lấy danh sách người dùng mà hiện tại người dùng đang theo dõi
   _loadFollowingData() async {
     DocumentSnapshot userDoc = await _firebaseFirestore
         .collection('users')
@@ -36,11 +35,9 @@ class _FollowingScreenState extends State<FollowingScreen> {
     });
   }
 
-  // Hàm unfollow, sẽ xóa người dùng khỏi danh sách following
   _unfollowUser(String uidToUnfollow) async {
     final userUid = FirebaseAuth.instance.currentUser!.uid;
 
-    // Cập nhật danh sách "following" trong Firestore
     await _firebaseFirestore.collection('users').doc(userUid).update({
       'following': FieldValue.arrayRemove([uidToUnfollow]),
     });

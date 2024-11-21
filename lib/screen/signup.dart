@@ -58,16 +58,16 @@ class _SignupScreenState extends State<SignupScreen> {
                 });
               },
               child: CircleAvatar(
-                radius: 36.r,
+                radius: 50.r,
                 backgroundColor: Colors.grey,
                 child: _imageFile == null
                     ? CircleAvatar(
-                        radius: 34.r,
+                        radius: 50.r,
                         backgroundImage: AssetImage('images/person.png'),
                         backgroundColor: Colors.grey.shade200,
                       )
                     : CircleAvatar(
-                        radius: 34.r,
+                        radius: 50.r,
                         backgroundImage: Image.file(
                           _imageFile!,
                           fit: BoxFit.cover,
@@ -83,10 +83,10 @@ class _SignupScreenState extends State<SignupScreen> {
             SizedBox(height: 15.h),
             Textfild(bio, bio_F, 'bio', Icons.abc),
             SizedBox(height: 15.h),
-            Textfild(password, password_F, 'Password', Icons.lock),
+            Textfild(password, password_F, 'Password', Icons.lock, isPassword: true),
             SizedBox(height: 15.h),
-            Textfild(passwordConfirme, passwordConfirme_F, 'PasswordConfirme',
-                Icons.lock),
+            Textfild(passwordConfirme, passwordConfirme_F, 'Password Confirme',
+                Icons.lock,isPassword: true),
             SizedBox(height: 15.h),
             Signup(),
             SizedBox(height: 15.h),
@@ -165,7 +165,7 @@ class _SignupScreenState extends State<SignupScreen> {
   }
 
   Padding Textfild(TextEditingController controll, FocusNode focusNode,
-      String typename, IconData icon) {
+      String typename, IconData icon, {bool isPassword = false}) {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 10.w),
       child: Container(
@@ -178,6 +178,7 @@ class _SignupScreenState extends State<SignupScreen> {
           style: TextStyle(fontSize: 18.sp, color: Colors.black),
           controller: controll,
           focusNode: focusNode,
+          obscureText: isPassword,
           decoration: InputDecoration(
             hintText: typename,
             prefixIcon: Icon(
