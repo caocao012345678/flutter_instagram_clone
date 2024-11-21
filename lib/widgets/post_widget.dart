@@ -217,20 +217,20 @@ class _PostWidgetState extends State<PostWidget> {
                       );
                     },
                     child: Image.asset(
-                      'images/comment.webp',
+                      'assets/images/comment.webp',
                       height: 28.h,
                     ),
                   ),
                   // SizedBox(width: 17.w),
                   // Image.asset(
-                  //   'images/send.jpg',
+                  //   'assets/images/send.jpg',
                   //   height: 28.h,
                   // ),
                   // const Spacer(),
                   // Padding(
                   //   padding: EdgeInsets.only(right: 15.w),
                   //   child: Image.asset(
-                  //     'images/save.png',
+                  //     'assets/images/save.png',
                   //     height: 28.h,
                   //   ),
                   // ),

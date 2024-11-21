@@ -118,7 +118,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                             child: CachedImage(_profileImageUrl),
                           )
                         : Image.asset(
-                      'images/person.png',
+                      'assets/images/person.png',
                       fit: BoxFit.cover,
                       width: 120.w,
                       height: 120.h,

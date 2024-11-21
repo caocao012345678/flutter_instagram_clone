@@ -1,11 +1,13 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_instagram_clone/data/firebase_service/firebase_auth.dart';
 import 'package:flutter_instagram_clone/util/dialog.dart';
 import 'package:flutter_instagram_clone/util/exeption.dart';
 import 'package:flutter_instagram_clone/util/imagepicker.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:path_provider/path_provider.dart';
 
 class SignupScreen extends StatefulWidget {
   final VoidCallback show;
@@ -38,6 +40,14 @@ class _SignupScreenState extends State<SignupScreen> {
     bio.dispose();
   }
 
+  Future<File> getDefaultImage() async {
+    final byteData = await rootBundle.load('assets/images/person.png');
+    final file = File('${(await getTemporaryDirectory()).path}/person.png');
+    await file.writeAsBytes(byteData.buffer.asUint8List());
+    return file;
+  }
+
+
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: false,
@@ -47,7 +57,7 @@ class _SignupScreenState extends State<SignupScreen> {
           children: [
             SizedBox(width: 96.w, height: 10.h),
             Center(
-              child: Image.asset('images/logo.jpg'),
+              child: Image.asset('assets/images/logo.jpg'),
             ),
             SizedBox(width: 96.w, height: 70.h),
             InkWell(
@@ -63,7 +73,7 @@ class _SignupScreenState extends State<SignupScreen> {
                 child: _imageFile == null
                     ? CircleAvatar(
                         radius: 50.r,
-                        backgroundImage: AssetImage('images/person.png'),
+                        backgroundImage: AssetImage('assets/images/person.png'),
                         backgroundColor: Colors.grey.shade200,
                       )
                     : CircleAvatar(
@@ -126,21 +136,31 @@ class _SignupScreenState extends State<SignupScreen> {
   }
 
   Widget Signup() {
+    bool _isLoading = false;
+
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 10.w),
       child: InkWell(
         onTap: () async {
+          setState(() {
+            _isLoading = true;
+          });
           try {
+            final defaultImage = await getDefaultImage(); // Tạo file từ asset nếu cần
             await Authentication().Signup(
-              email: email.text,
-              password: password.text,
-              passwordConfirme: passwordConfirme.text,
-              username: username.text,
-              bio: bio.text,
-              profile: _imageFile ?? File(''),
+              email: email.text.trim(),
+              password: password.text.trim(),
+              passwordConfirme: passwordConfirme.text.trim(),
+              username: username.text.trim(),
+              bio: bio.text.trim(),
+              profile: _imageFile ?? defaultImage, // Sử dụng ảnh mặc định
             );
           } on exceptions catch (e) {
             dialogBuilder(context, e.message);
+          } finally {
+            setState(() {
+              _isLoading = false;
+            });
           }
         },
         child: Container(
@@ -151,7 +171,9 @@ class _SignupScreenState extends State<SignupScreen> {
             color: Colors.black,
             borderRadius: BorderRadius.circular(10.r),
           ),
-          child: Text(
+          child: _isLoading
+              ? CircularProgressIndicator(color: Colors.white)
+              : Text(
             'Sign up',
             style: TextStyle(
               fontSize: 23.sp,
@@ -163,6 +185,8 @@ class _SignupScreenState extends State<SignupScreen> {
       ),
     );
   }
+
+
 
   Padding Textfild(TextEditingController controll, FocusNode focusNode,
       String typename, IconData icon, {bool isPassword = false}) {

@@ -70,7 +70,7 @@ class _Navigations_ScreenState extends State<Navigations_Screen> {
             ),
             BottomNavigationBarItem(
               icon: Image.asset(
-                'images/instagram-reels-icon.png',
+                'assets/images/instagram-reels-icon.png',
                 height: 20.h,
               ),
               label: '',
