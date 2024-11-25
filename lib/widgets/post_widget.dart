@@ -40,6 +40,57 @@ class _PostWidgetState extends State<PostWidget> {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to delete post: $error')));
     });
   }
+  void _editPost() {
+    final TextEditingController captionController = TextEditingController();
+    captionController.text = widget.snapshot['caption'];
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Edit Caption'),
+          content: TextField(
+            controller: captionController,
+            decoration: const InputDecoration(hintText: 'Enter new caption'),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context); // Đóng hộp thoại
+              },
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                String newCaption = captionController.text.trim();
+                if (newCaption.isNotEmpty) {
+                  // Cập nhật caption trong Firestore
+                  FirebaseFirestore.instance
+                      .collection('posts')
+                      .doc(widget.snapshot['postId'])
+                      .update({'caption': newCaption}).then((_) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Caption updated successfully')),
+                    );
+                    setState(() {
+                      widget.snapshot['caption'] = newCaption;
+                    });
+                    Navigator.pop(context); // Đóng hộp thoại
+                  }).catchError((error) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Failed to update caption: $error')),
+                    );
+                  });
+                }
+              },
+              child: const Text('Save'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   Widget build(BuildContext context) {
     return Column(
       children: [
@@ -82,6 +133,9 @@ class _PostWidgetState extends State<PostWidget> {
                       case 'Delete':
                         _deletePost();
                         break;
+                      case 'Edit':
+                        _editPost();
+                        break;
                       case 'Block':
                         break;
                       case 'Message':
@@ -91,27 +145,28 @@ class _PostWidgetState extends State<PostWidget> {
                   },
                   itemBuilder: (BuildContext context) {
                     bool isOwner = widget.snapshot['uid'] == FirebaseAuth.instance.currentUser!.uid;
+
                     return [
-                      if (isOwner) ...[
+                      if (isOwner)
                         const PopupMenuItem<String>(
                           value: 'Delete',
                           child: Text('Delete'),
                         ),
+                      if (isOwner)
                         const PopupMenuItem<String>(
                           value: 'Edit',
                           child: Text('Edit'),
                         ),
-                      ],
-                      if (!isOwner) ...[
+                      if (!isOwner)
                         const PopupMenuItem<String>(
                           value: 'Block',
                           child: Text('Block'),
                         ),
+                      if (!isOwner)
                         const PopupMenuItem<String>(
                           value: 'Message',
                           child: Text('Message'),
                         ),
-                      ],
                     ];
                   },
                 ),
