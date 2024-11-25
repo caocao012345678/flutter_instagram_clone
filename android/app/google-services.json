@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "415996977598",
+    "project_id": "flutteraw",
+    "storage_bucket": "flutteraw.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:415996977598:android:bc6d3b1ed1d4d0066fd9ef",
+        "android_client_info": {
+          "package_name": "com.example.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDeU0ZqTVh5VHS7t03Z3t4qBxx72Ubc394"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:415996977598:android:2d8d1b77bee98e566fd9ef",
+        "android_client_info": {
+          "package_name": "com.example.flutter_instagram_clone"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDeU0ZqTVh5VHS7t03Z3t4qBxx72Ubc394"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

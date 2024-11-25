@@ -1,0 +1,9 @@
+{
+  "projects": {
+    "default": "flutteraw",
+    "firebase init": "flutteraw",
+    "flutteraw ": "flutteraw"
+  },
+  "targets": {},
+  "etags": {}
+}
