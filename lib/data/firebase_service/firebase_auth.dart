@@ -16,6 +16,7 @@ class Authentication {
       await _auth.signInWithEmailAndPassword(
           email: email.trim(), password: password.trim());
     } on FirebaseException catch (e) {
+      print('Login error: $e');
       throw exceptions(e.message.toString());
     }
   }

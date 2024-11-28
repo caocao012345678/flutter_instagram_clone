@@ -5,15 +5,16 @@ import 'package:flutter_instagram_clone/data/firebase_service/firestor.dart';
 import 'package:flutter_instagram_clone/data/model/usermodel.dart';
 import 'package:flutter_instagram_clone/screen/post_screen.dart';
 import 'package:flutter_instagram_clone/util/image_cached.dart';
-import 'package:flutter_instagram_clone/widgets/post_widget.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+import '../Chat/chat_detail_screen.dart';
 import 'editprofile_screen.dart';
 import 'followers_screen.dart';
 import 'following_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   String Uid;
+
   ProfileScreen({super.key, required this.Uid});
 
   @override
@@ -81,6 +82,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       Navigator.pushReplacementNamed(context, '/login');
     }
   }
+
   Widget buildStatColumn({
     required String label,
     required String field,
@@ -91,7 +93,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return GestureDetector(
       onTap: onTap,
       child: StreamBuilder<DocumentSnapshot>(
-        stream: FirebaseFirestore.instance.collection('users').doc(uid).snapshots(),
+        stream:
+            FirebaseFirestore.instance.collection('users').doc(uid).snapshots(),
         builder: (context, snapshot) {
           String displayText = '0';
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -153,8 +156,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 builder: (context, snapshot) {
                   if (!snapshot.hasData) {
                     return const SliverToBoxAdapter(
-                        child:
-                        Center(child: CircularProgressIndicator()));
+                        child: Center(child: CircularProgressIndicator()));
                   }
                   post_lenght = snapshot.data!.docs.length;
                   return SliverGrid(
@@ -171,7 +173,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       );
                     }, childCount: post_lenght),
                     gridDelegate:
-                    const SliverGridDelegateWithFixedCrossAxisCount(
+                        const SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: 3,
                       crossAxisSpacing: 4,
                       mainAxisSpacing: 4,
@@ -219,9 +221,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-
                 const Spacer(),
-
                 if (widget.Uid == _auth.currentUser?.uid)
                   IconButton(
                     icon: const Icon(
@@ -247,7 +247,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   }
                   var user = snapshot.data!;
                   return Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 13.w, vertical: 10.h),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 13.w, vertical: 10.h),
                     child: ClipOval(
                       child: SizedBox(
                         width: 80.w,
@@ -292,7 +293,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         onTap: () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (context) => FollowersScreen()),
+                            MaterialPageRoute(
+                                builder: (context) => FollowersScreen()),
                           );
                         },
                       ),
@@ -306,7 +308,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         onTap: () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (context) => FollowingScreen()),
+                            MaterialPageRoute(
+                                builder: (context) => FollowingScreen()),
                           );
                         },
                       ),
@@ -365,25 +368,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                   child: yourse
                       ? GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => EditProfileScreen(),
-                        ),
-                      );
-                    },
-                    child: const Text(
-                      'Edit Your Profile',
-                      style: TextStyle(color: Colors.black),
-                    ),
-                  )
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => EditProfileScreen(),
+                              ),
+                            );
+                          },
+                          child: const Text(
+                            'Edit Your Profile',
+                            style: TextStyle(color: Colors.black),
+                          ),
+                        )
                       : const Text(
-                    'Follow',
-                    style: TextStyle(color: Colors.white),
-                  ),
+                          'Follow',
+                          style: TextStyle(color: Colors.white),
+                        ),
                 ),
-
               ),
             ),
           ),
@@ -414,19 +416,78 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                   ),
                   SizedBox(width: 8.w),
+                  //         Expanded(
+                  //           child: Container(
+                  //             alignment: Alignment.center,
+                  //             height: 30.h,
+                  //             width: 100.w,
+                  //             decoration: BoxDecoration(
+                  //               color: Colors.grey.shade200,
+                  //               borderRadius: BorderRadius.circular(5.r),
+                  //               border: Border.all(color: Colors.grey.shade200),
+                  //             ),
+                  //             child: const Text(
+                  //               'Message',
+                  //               style: TextStyle(color: Colors.black),
+                  //             ),
+                  //           ),
+                  //         ),
+                  //       ],
+                  //     ),
+                  //   ),
+                  // ),
                   Expanded(
-                    child: Container(
-                      alignment: Alignment.center,
-                      height: 30.h,
-                      width: 100.w,
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade200,
-                        borderRadius: BorderRadius.circular(5.r),
-                        border: Border.all(color: Colors.grey.shade200),
-                      ),
-                      child: const Text(
-                        'Message',
-                        style: TextStyle(color: Colors.black),
+                    child: GestureDetector(
+                      onTap: () async {
+                        try {
+                          final currentUserId =
+                              FirebaseAuth.instance.currentUser!.uid;
+                          final otherUserId = widget.Uid;
+
+                          final chatId =
+                              currentUserId.hashCode <= otherUserId.hashCode
+                                  ? '$currentUserId\_$otherUserId'
+                                  : '$otherUserId\_$currentUserId';
+
+                          final chatRef = FirebaseFirestore.instance
+                              .collection('chats')
+                              .doc(chatId);
+
+                          await chatRef.set({
+                            'users': [currentUserId, otherUserId],
+                            'lastMessage': '',
+                            'lastMessageTime': FieldValue.serverTimestamp(),
+                          }, SetOptions(merge: true));
+
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => ChatDetailScreen(
+                                chatId: chatId,
+                                otherUserId: otherUserId,
+                              ),
+                            ),
+                          );
+                        } catch (e) {
+                          print('Error creating or navigating to chat: $e');
+                          // Hiển thị thông báo lỗi cho người dùng (nếu cần thiết)
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                                content: Text('Có lỗi xảy ra khi mở chat!')),
+                          );
+                        }
+                      },
+                      child: Container(
+                        alignment: Alignment.center,
+                        height: 30.h,
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade200,
+                          borderRadius: BorderRadius.circular(5.r),
+                        ),
+                        child: const Text(
+                          'Message',
+                          style: TextStyle(color: Colors.black),
+                        ),
                       ),
                     ),
                   ),

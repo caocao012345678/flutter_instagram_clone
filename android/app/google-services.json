@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "745395520863",
-    "project_id": "testappfromgit1",
-    "storage_bucket": "testappfromgit1.appspot.com"
+    "project_number": "666600639900",
+    "project_id": "testvisa-6edb9",
+    "storage_bucket": "testvisa-6edb9.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:745395520863:android:c610dbc66c9e6e2f3be2ea",
+        "mobilesdk_app_id": "1:666600639900:android:46ccf06ef0fdf9696d0c59",
         "android_client_info": {
           "package_name": "com.example.flutter_instagram_clone"
         }
@@ -15,45 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyCjCk5royl0biDgHd1RaVv7N90crGlDHR0"
-        }
-      ],
-      "services": {
-        "appinvite_service": {
-          "other_platform_oauth_client": []
-        }
-      }
-    },
-    {
-      "client_info": {
-        "mobilesdk_app_id": "1:745395520863:android:a0527734ff2d91943be2ea",
-        "android_client_info": {
-          "package_name": "com.example.instagram_flutter"
-        }
-      },
-      "oauth_client": [],
-      "api_key": [
-        {
-          "current_key": "AIzaSyCjCk5royl0biDgHd1RaVv7N90crGlDHR0"
-        }
-      ],
-      "services": {
-        "appinvite_service": {
-          "other_platform_oauth_client": []
-        }
-      }
-    },
-    {
-      "client_info": {
-        "mobilesdk_app_id": "1:745395520863:android:816522d33ea156663be2ea",
-        "android_client_info": {
-          "package_name": "com.thealphamerc.flutter_twitter_clone"
-        }
-      },
-      "oauth_client": [],
-      "api_key": [
-        {
-          "current_key": "AIzaSyCjCk5royl0biDgHd1RaVv7N90crGlDHR0"
+          "current_key": "AIzaSyD9UPVuROgbU98ERn-X6FUCEZAsQsOg5Bg"
         }
       ],
       "services": {
