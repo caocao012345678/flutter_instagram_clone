@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../Chat/chat_detail_screen.dart';
 import '../Chat/chat_list_screen.dart';
+import '../Chat/create_group_screen.dart';
 
 
 class AppRoutes {
@@ -19,9 +20,12 @@ class AppRoutes {
               chatId: args['chatId'],
               otherUserId: args['otherUserId'],
             ),
+
           );
         }
         return _errorRoute();
+      case '/create_group_chat':
+        return MaterialPageRoute(builder: (context) => const CreateGroupScreen());
       default:
         return _errorRoute();
     }
@@ -36,4 +40,5 @@ class AppRoutes {
     );
   }
 }
+
 
