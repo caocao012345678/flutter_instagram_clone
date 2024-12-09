@@ -18,6 +18,7 @@ class _AddPostTextScreenState extends State<AddPostTextScreen> {
   final caption = TextEditingController();
   final location = TextEditingController();
   bool islooding = false;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -26,101 +27,94 @@ class _AddPostTextScreenState extends State<AddPostTextScreen> {
         backgroundColor: Colors.white,
         elevation: 0,
         title: Text(
-          'New post',
+          'Bài đăng mới',
           style: TextStyle(color: Colors.black),
         ),
         centerTitle: false,
-        actions: [
-          Center(
-            child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 10.w),
-              child: GestureDetector(
-                onTap: () async {
-                  setState(() {
-                    islooding = true;
-                  });
-                  String post_url = await StorageMethod()
-                      .uploadImageToStorage('post', widget._file);
-                  await Firebase_Firestor().CreatePost(
-                    postImage: post_url,
-                    caption: caption.text,
-                    location: location.text,
-                  );
-                  setState(() {
-                    islooding = false;
-                  });
-                  // ignore: use_build_context_synchronously
-                  Navigator.of(context).pop();
-                },
-                child: Text(
-                  'Share',
-                  style: TextStyle(color: Colors.blue, fontSize: 15.sp),
-                ),
-              ),
-            ),
-          ),
-        ],
       ),
       body: SafeArea(
-          child: islooding
-              ? Center(
-                  child: CircularProgressIndicator(
-                  color: Colors.black,
-                ))
-              : Padding(
-                  padding: EdgeInsets.only(top: 10.h),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Padding(
-                        padding: EdgeInsets.symmetric(
-                            horizontal: 10.w, vertical: 5.h),
-                        child: Row(
-                          children: [
-                            Container(
-                              width: 65.w,
-                              height: 65.h,
-                              decoration: BoxDecoration(
-                                color: Colors.amber,
-                                image: DecorationImage(
-                                  image: FileImage(widget._file),
-                                  fit: BoxFit.cover,
-                                ),
-                              ),
-                            ),
-                            SizedBox(width: 10.w),
-                            SizedBox(
-                              width: 280.w,
-                              height: 60.h,
-                              child: TextField(
-                                controller: caption,
-                                decoration: const InputDecoration(
-                                  hintText: 'Write a caption ...',
-                                  border: InputBorder.none,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
+        child: islooding
+            ? Center(
+          child: CircularProgressIndicator(
+            color: Colors.black,
+          ),
+        )
+            : Padding(
+          padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 10.h),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  // Ảnh bài đăng
+                  Container(
+                    width: 65.w,
+                    height: 65.h,
+                    decoration: BoxDecoration(
+                      color: Colors.amber,
+                      image: DecorationImage(
+                        image: FileImage(widget._file),
+                        fit: BoxFit.cover,
                       ),
-                      const Divider(),
-                      Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 10.w),
-                        child: SizedBox(
-                          width: 280.w,
-                          height: 30.h,
-                          child: TextField(
-                            controller: location,
-                            decoration: const InputDecoration(
-                              hintText: 'Add location',
-                              border: InputBorder.none,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
-                )),
+                  SizedBox(width: 10.w),
+                  // Vùng nhập caption
+                  Expanded(
+                    child: TextField(
+                      controller: caption,
+                      decoration: const InputDecoration(
+                        hintText: 'Hãy viết gì đấy...',
+                        border: InputBorder.none,
+                      ),
+                      maxLines: null,
+                      style: TextStyle(fontSize: 14.sp),
+                    ),
+                  ),
+                ],
+              ),
+              Align(
+                alignment: Alignment.centerRight,
+                child: GestureDetector(
+                  onTap: () async {
+                    setState(() {
+                      islooding = true;
+                    });
+                    String post_url = await StorageMethod()
+                        .uploadImageToStorage('post', widget._file);
+                    await Firebase_Firestor().CreatePost(
+                      postImage: post_url,
+                      caption: caption.text,
+                      location: location.text,
+                    );
+                    setState(() {
+                      islooding = false;
+                    });
+                    Navigator.of(context).pop();
+                  },
+                  child: Container(
+                    margin: EdgeInsets.only(top: 10.h),
+                    padding: EdgeInsets.symmetric(
+                        horizontal: 20.w, vertical: 10.h),
+                    decoration: BoxDecoration(
+                      color: Colors.black,
+                      borderRadius: BorderRadius.circular(10.r),
+                    ),
+                    child: Text(
+                      'Đăng bài',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

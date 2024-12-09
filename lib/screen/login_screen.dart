@@ -15,36 +15,46 @@ class _LoginScreenState extends State<LoginScreen> {
   FocusNode email_F = FocusNode();
   final password = TextEditingController();
   FocusNode password_F = FocusNode();
+
   @override
   void dispose() {
-    // TODO: implement dispose
-    super.dispose();
     email.dispose();
     password.dispose();
+    email_F.dispose();
+    password_F.dispose();
+    super.dispose();
   }
 
+  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      resizeToAvoidBottomInset: false,
-      backgroundColor: Colors.white,
-      body: SafeArea(
-        child: Column(
-          children: [
-            SizedBox(width: 96.w, height: 100.h),
-            Center(
-              child: Image.asset('assets/images/logo.jpg'),
+    return GestureDetector(
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: Scaffold(
+        resizeToAvoidBottomInset: true,
+        backgroundColor: Colors.white,
+        body: SafeArea(
+          child: SingleChildScrollView(
+            padding: EdgeInsets.symmetric(horizontal: 1.w),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                SizedBox(height: 100.h),
+                Center(
+                  child: Image.asset('assets/images/logo.jpg'),
+                ),
+                SizedBox(height: 120.h),
+                Textfild(email, email_F, 'Email', Icons.email),
+                SizedBox(height: 15.h),
+                Textfild(password, password_F, 'Password', Icons.lock, isPassword: true),
+                SizedBox(height: 15.h),
+                forget(),
+                SizedBox(height: 15.h),
+                login(),
+                SizedBox(height: 15.h),
+                Have(),
+              ],
             ),
-            SizedBox(height: 120.h),
-            Textfild(email, email_F, 'Email', Icons.email),
-            SizedBox(height: 15.h),
-            Textfild(password, password_F, 'Password', Icons.lock, isPassword: true),
-            SizedBox(height: 15.h),
-            forget(),
-            SizedBox(height: 15.h),
-            login(),
-            SizedBox(height: 15.h),
-            Have()
-          ],
+          ),
         ),
       ),
     );
@@ -57,7 +67,7 @@ class _LoginScreenState extends State<LoginScreen> {
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
           Text(
-            "Don't have account?  ",
+            "Don't have an account?  ",
             style: TextStyle(
               fontSize: 14.sp,
               color: Colors.grey,
@@ -66,11 +76,12 @@ class _LoginScreenState extends State<LoginScreen> {
           GestureDetector(
             onTap: widget.show,
             child: Text(
-              "Sign up ",
+              "Sign up",
               style: TextStyle(
-                  fontSize: 15.sp,
-                  color: Colors.blue,
-                  fontWeight: FontWeight.bold),
+                fontSize: 15.sp,
+                color: Colors.blue,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
         ],
@@ -125,7 +136,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Padding Textfild(TextEditingController controll, FocusNode focusNode,
-      String typename, IconData icon,{bool isPassword = false}) {
+      String typename, IconData icon, {bool isPassword = false}) {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 10.w),
       child: Container(
@@ -146,7 +157,7 @@ class _LoginScreenState extends State<LoginScreen> {
               color: focusNode.hasFocus ? Colors.black : Colors.grey[600],
             ),
             contentPadding:
-                EdgeInsets.symmetric(horizontal: 15.w, vertical: 15.h),
+            EdgeInsets.symmetric(horizontal: 15.w, vertical: 15.h),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(5.r),
               borderSide: BorderSide(
