@@ -25,7 +25,7 @@ class AppRoutes {
         }
         return _errorRoute();
       case '/create_group_chat':
-        return MaterialPageRoute(builder: (context) => const CreateGroupScreen());
+        return MaterialPageRoute(builder: (context) => const CreateGroupScreen(currentUserId: '',));
       default:
         return _errorRoute();
     }

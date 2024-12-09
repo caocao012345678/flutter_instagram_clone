@@ -32,6 +32,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_instagram_clone/auth/mainpage.dart';
 import 'package:flutter_instagram_clone/firebase_options.dart';
+import 'package:flutter_instagram_clone/screen/login_screen.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_instagram_clone/routes/chat_routes.dart';  // Import AppRoutes
 
@@ -52,6 +53,12 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      routes: {
+        '/login': (context) => LoginScreen(() {
+          // Xử lý hành động chuyển màn hình (nếu cần)
+          debugPrint('Chuyển đổi trạng thái từ LoginScreen.');
+        }),
+      },
       debugShowCheckedModeBanner: false,
       home: ScreenUtilInit(
         designSize: const Size(375, 812),

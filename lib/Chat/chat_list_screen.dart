@@ -200,6 +200,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'groupchat_detail_screen.dart'; // Import màn hình chi tiết nhóm
 
 class ChatListScreen extends StatelessWidget {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -258,6 +259,7 @@ class ChatListScreen extends StatelessWidget {
               var chatData = snapshot.data!.docs[index];
               var chatMap = chatData.data() as Map<String, dynamic>?;
 
+              String chatType = chatMap?['type'] ?? 'personal';
               String lastMessage = chatMap != null && chatMap.containsKey('lastMessage')
                   ? chatMap['lastMessage']
                   : 'Không có tin nhắn.';
@@ -265,53 +267,94 @@ class ChatListScreen extends StatelessWidget {
                   ? chatMap['lastMessageTime'] as Timestamp?
                   : null;
 
-              String otherUserId = chatMap != null
-                  ? chatMap['users']
-                  .firstWhere((userId) => userId != currentUserId)
-                  : '';
+              if (chatType == 'group') {
+                // Hiển thị nhóm chat
+                String groupName = chatMap?['groupName'] ?? 'Nhóm';
+                String groupImage = chatMap?['groupImage'] ?? '';
 
-              return StreamBuilder<DocumentSnapshot>(
-                stream: _firestore.collection('users').doc(otherUserId).snapshots(),
-                builder: (context, userSnapshot) {
-                  if (userSnapshot.connectionState == ConnectionState.waiting) {
-                    return const SizedBox();
-                  }
+                return ListTile(
+                  leading: CircleAvatar(
+                    backgroundImage: groupImage.isNotEmpty
+                        ? NetworkImage(groupImage)
+                        : const AssetImage('assets/default_group_avatar.png') as ImageProvider,
+                  ),
+                  title: Text(groupName),
+                  subtitle: Text(lastMessage),
+                  trailing: Text(
+                    lastMessageTimestamp != null
+                        ? formatTimestamp(lastMessageTimestamp)
+                        : '',
+                    style: const TextStyle(fontSize: 12, color: Colors.grey),
+                  ),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => GroupChatDetailScreen(
+                          chatId: chatData.id,
+                          groupName: groupName,
+                          groupImage: groupImage,
+                          currentUserId: currentUserId, otherUserId: '',
+                        ),
+                      ),
+                    );
+                  },
+                );
+              } else {
+                // Hiển thị cuộc trò chuyện cá nhân
+                List<dynamic> users = chatMap?['users'] ?? [];
+                String otherUserId = users.firstWhere(
+                      (userId) => userId != currentUserId,
+                  orElse: () => '',
+                );
 
-                  if (!userSnapshot.hasData || !userSnapshot.data!.exists) {
-                    return const SizedBox();
-                  }
+                if (otherUserId.isEmpty || chatData.id.isEmpty) {
+                  return const SizedBox(); // Bỏ qua các trường hợp dữ liệu không hợp lệ
+                }
 
-                  var userData = userSnapshot.data!.data() as Map<String, dynamic>;
-                  String username = userData['username'] ?? 'Người dùng';
-                  String avatarUrl = userData['profile'] ?? '';
+                return StreamBuilder<DocumentSnapshot>(
+                  stream: _firestore.collection('users').doc(otherUserId).snapshots(),
+                  builder: (context, userSnapshot) {
+                    if (userSnapshot.connectionState == ConnectionState.waiting) {
+                      return const SizedBox();
+                    }
 
-                  return ListTile(
-                    leading: CircleAvatar(
-                      backgroundImage: avatarUrl.isNotEmpty
-                          ? NetworkImage(avatarUrl)
-                          : const AssetImage('assets/default_avatar.png') as ImageProvider,
-                    ),
-                    title: Text(username),
-                    subtitle: Text(lastMessage),
-                    trailing: Text(
-                      lastMessageTimestamp != null
-                          ? formatTimestamp(lastMessageTimestamp)
-                          : '',
-                      style: const TextStyle(fontSize: 12, color: Colors.grey),
-                    ),
-                    onTap: () {
-                      Navigator.pushNamed(
-                        context,
-                        '/chat_detail',
-                        arguments: {
-                          'chatId': chatData.id,
-                          'otherUserId': otherUserId,
-                        },
-                      );
-                    },
-                  );
-                },
-              );
+                    if (!userSnapshot.hasData || !userSnapshot.data!.exists) {
+                      return const SizedBox();
+                    }
+
+                    var userData = userSnapshot.data!.data() as Map<String, dynamic>;
+                    String username = userData['username'] ?? 'Người dùng';
+                    String avatarUrl = userData['profile'] ?? '';
+
+                    return ListTile(
+                      leading: CircleAvatar(
+                        backgroundImage: avatarUrl.isNotEmpty
+                            ? NetworkImage(avatarUrl)
+                            : const AssetImage('assets/default_avatar.png') as ImageProvider,
+                      ),
+                      title: Text(username),
+                      subtitle: Text(lastMessage),
+                      trailing: Text(
+                        lastMessageTimestamp != null
+                            ? formatTimestamp(lastMessageTimestamp)
+                            : '',
+                        style: const TextStyle(fontSize: 12, color: Colors.grey),
+                      ),
+                      onTap: () {
+                        Navigator.pushNamed(
+                          context,
+                          '/chat_detail',
+                          arguments: {
+                            'chatId': chatData.id,
+                            'otherUserId': otherUserId,
+                          },
+                        );
+                      },
+                    );
+                  },
+                );
+              }
             },
           );
         },

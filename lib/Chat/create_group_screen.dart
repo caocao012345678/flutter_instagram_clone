@@ -1,10 +1,14 @@
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 
+import 'groupchat_detail_screen.dart';
+
 class CreateGroupScreen extends StatefulWidget {
-  const CreateGroupScreen({Key? key}) : super(key: key);
+  final String currentUserId; // Nhận userId của người tạo
+  const CreateGroupScreen({Key? key, required this.currentUserId}) : super(key: key);
 
   @override
   State<CreateGroupScreen> createState() => _CreateGroupScreenState();
@@ -16,6 +20,12 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
   List<String> selectedUserIds = [];
   File? _groupImage;
   bool _isCreatingGroup = false;
+
+  @override
+  void initState() {
+    super.initState();
+    selectedUserIds.add(widget.currentUserId); // Thêm người tạo làm nhóm trưởng
+  }
 
   Future<void> pickGroupImage() async {
     final picker = ImagePicker();
@@ -43,9 +53,9 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
       return;
     }
 
-    if (selectedUserIds.length < 2) {
+    if (selectedUserIds.length < 3) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Vui lòng chọn ít nhất 2 người dùng để tạo nhóm!")),
+        const SnackBar(content: Text("Vui lòng chọn ít nhất 2 người dùng khác để tạo nhóm!")),
       );
       return;
     }
@@ -55,11 +65,10 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
     });
 
     try {
-      // Upload hình ảnh lên Firestore (giả sử bạn có một phương thức `uploadImage` để tải ảnh)
       String groupImageUrl = await uploadImageToStorage(_groupImage!);
 
-      // Lưu thông tin nhóm vào Firestore
-      await _firestore.collection('chats').add({
+      // Lưu thông tin nhóm vào Firestore và nhận lại document ID (chatId)
+      DocumentReference groupDoc = await _firestore.collection('chats').add({
         'type': 'group',
         'users': selectedUserIds,
         'groupName': _groupNameController.text.trim(),
@@ -67,11 +76,22 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
         'createdAt': FieldValue.serverTimestamp(),
         'lastMessage': '',
         'lastMessageTime': null,
+        'admin': widget.currentUserId,
+        'pinnedMessages': [], // Danh sách tin nhắn đã ghim
       });
 
-      Navigator.pop(context);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Nhóm đã được tạo thành công!")),
+
+      // Chuyển hướng sang màn hình chi tiết nhóm
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => GroupChatDetailScreen(
+            chatId: groupDoc.id,
+            groupName: _groupNameController.text.trim(),
+            groupImage: groupImageUrl,
+            currentUserId: widget.currentUserId, otherUserId: '',
+          ),
+        ),
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -84,11 +104,39 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
     }
   }
 
+
+
+
   Future<String> uploadImageToStorage(File image) async {
-    // Đây là nơi bạn triển khai việc tải ảnh lên Firebase Storage
-    // Trả về URL của ảnh đã tải lên
-    return "https://example.com/your-uploaded-image.jpg"; // Thay bằng URL thật
+    try {
+      // Kiểm tra file trước khi tải lên
+      if (!image.existsSync()) {
+        throw Exception("Tệp không tồn tại hoặc không hợp lệ.");
+      }
+
+      // Tạo đường dẫn lưu ảnh trên Firebase Storage
+      String fileName = 'group_images/${DateTime.now().millisecondsSinceEpoch}.jpg';
+      Reference ref = FirebaseStorage.instance.ref().child(fileName);
+
+      // Tải ảnh lên
+      UploadTask uploadTask = ref.putFile(image);
+      TaskSnapshot snapshot = await uploadTask;
+
+      // Kiểm tra trạng thái tải lên
+      if (snapshot.state == TaskState.success) {
+        // Lấy URL của ảnh sau khi tải lên
+        String downloadUrl = await snapshot.ref.getDownloadURL();
+        return downloadUrl;
+      } else {
+        throw Exception("Tải ảnh lên không thành công.");
+      }
+    } catch (e) {
+      // Log chi tiết lỗi
+      print("Lỗi khi tải ảnh lên Firebase Storage: $e");
+      throw Exception("Lỗi khi tải ảnh lên Firebase Storage: $e");
+    }
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -150,34 +198,48 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
                   return const Center(child: Text("Không có người dùng nào."));
                 }
 
+                // Lọc danh sách, loại bỏ người tạo nhóm
+                List<QueryDocumentSnapshot> filteredUsers = snapshot.data!.docs.where((doc) {
+                  return doc.id != widget.currentUserId; // Loại người tạo nhóm
+                }).toList();
+
+                if (filteredUsers.isEmpty) {
+                  return const Center(child: Text("Không còn người dùng nào để thêm vào nhóm."));
+                }
+
+
                 return ListView.builder(
-                  itemCount: snapshot.data!.docs.length,
+                  itemCount: filteredUsers.length,
                   itemBuilder: (context, index) {
-                    var userDoc = snapshot.data!.docs[index];
+                    var userDoc = filteredUsers[index];
                     var userData = userDoc.data() as Map<String, dynamic>;
                     String userId = userDoc.id;
                     String username = userData['username'] ?? 'Người dùng';
                     String avatarUrl = userData['profile'] ?? '';
 
-                    return ListTile(
-                      leading: CircleAvatar(
-                        backgroundImage: avatarUrl.isNotEmpty
-                            ? NetworkImage(avatarUrl)
-                            : const AssetImage('assets/default_avatar.png') as ImageProvider,
-                      ),
-                      title: Text(username),
-                      trailing: Checkbox(
-                        value: selectedUserIds.contains(userId),
-                        onChanged: (bool? value) {
-                          setState(() {
-                            if (value == true) {
-                              selectedUserIds.add(userId);
-                            } else {
-                              selectedUserIds.remove(userId);
-                            }
-                          });
-                        },
-                      ),
+                    return StatefulBuilder(
+                      builder: (context, setStateCheckbox) {
+                        return ListTile(
+                          leading: CircleAvatar(
+                            backgroundImage: avatarUrl.isNotEmpty
+                                ? NetworkImage(avatarUrl)
+                                : const AssetImage('assets/default_avatar.png') as ImageProvider,
+                          ),
+                          title: Text(username),
+                          trailing: Checkbox(
+                            value: selectedUserIds.contains(userId),
+                            onChanged: (bool? value) {
+                              setStateCheckbox(() {
+                                if (value == true) {
+                                  selectedUserIds.add(userId);
+                                } else {
+                                  selectedUserIds.remove(userId);
+                                }
+                              });
+                            },
+                          ),
+                        );
+                      },
                     );
                   },
                 );
