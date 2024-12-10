@@ -17,7 +17,7 @@ class Comment extends StatefulWidget {
 class _CommentState extends State<Comment> {
   final comment = TextEditingController();
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  bool islodaing = false;
+  bool isloading = false;
   @override
   Widget build(BuildContext context) {
     return ClipRRect(
@@ -87,7 +87,7 @@ class _CommentState extends State<Comment> {
                     GestureDetector(
                       onTap: () {
                         setState(() {
-                          islodaing = true;
+                          isloading = true;
                         });
                         if (comment.text.isNotEmpty) {
                           Firebase_Firestor().Comments(
@@ -97,11 +97,11 @@ class _CommentState extends State<Comment> {
                           );
                         }
                         setState(() {
-                          islodaing = false;
+                          isloading = false;
                           comment.clear();
                         });
                       },
-                      child: islodaing
+                      child: isloading
                           ? SizedBox(
                               width: 10.w,
                               height: 10.h,

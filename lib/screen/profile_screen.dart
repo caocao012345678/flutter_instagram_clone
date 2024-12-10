@@ -58,20 +58,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Đăng xuất'),
-          content: Text('Bạn có chắc chắn muốn đăng xuất không?'),
+          title: Text('Log out'),
+          content: Text('Are you sure you want to log out?'),
           actions: <Widget>[
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop(false);
               },
-              child: Text('Hủy'),
+              child: Text('Cancel'),
             ),
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop(true);
               },
-              child: Text('Đồng ý'),
+              child: Text('Yes'),
             ),
           ],
         );
@@ -265,7 +265,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      SizedBox(width: 15),
+                      SizedBox(width: 15.w),
                       Column(
                         children: [
                           Text(
@@ -283,7 +283,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           ),
                         ],
                       ),
-                      SizedBox(width: 15),
+                      SizedBox(width: 15.w),
                       // Followers
                       buildStatColumn(
                         label: 'Followers',
@@ -298,7 +298,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           );
                         },
                       ),
-                      SizedBox(width: 15),
+                      SizedBox(width: 15.w),
                       // Following
                       buildStatColumn(
                         label: 'Following',
@@ -416,26 +416,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                   ),
                   SizedBox(width: 8.w),
-                  //         Expanded(
-                  //           child: Container(
-                  //             alignment: Alignment.center,
-                  //             height: 30.h,
-                  //             width: 100.w,
-                  //             decoration: BoxDecoration(
-                  //               color: Colors.grey.shade200,
-                  //               borderRadius: BorderRadius.circular(5.r),
-                  //               border: Border.all(color: Colors.grey.shade200),
-                  //             ),
-                  //             child: const Text(
-                  //               'Message',
-                  //               style: TextStyle(color: Colors.black),
-                  //             ),
-                  //           ),
-                  //         ),
-                  //       ],
-                  //     ),
-                  //   ),
-                  // ),
                   Expanded(
                     child: GestureDetector(
                       onTap: () async {
@@ -470,10 +450,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           );
                         } catch (e) {
                           print('Error creating or navigating to chat: $e');
-                          // Hiển thị thông báo lỗi cho người dùng (nếu cần thiết)
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                                content: Text('Có lỗi xảy ra khi mở chat!')),
+                                content: Text('Error creating or open chat!')),
                           );
                         }
                       },

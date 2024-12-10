@@ -22,62 +22,44 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    setupFirebaseMessaging();
+    // setupFirebaseMessaging();
   }
 
   // Cấu hình Firebase Messaging
-  void setupFirebaseMessaging() async {
-    messaging = FirebaseMessaging.instance;
-
-    // Yêu cầu quyền thông báo
-    NotificationSettings settings = await messaging.requestPermission(
-      alert: true,
-      badge: true,
-      sound: true,
-    );
-
-    if (settings.authorizationStatus == AuthorizationStatus.authorized) {
-      print("Quyền thông báo đã được cấp!");
-
-      // Nhận token thiết bị
-      messaging.getToken().then((token) {
-        print("Token người dùng: $token");
-      });
-
-      // Lắng nghe thông báo khi ứng dụng đang mở
-      FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-        print("Nhận thông báo khi ứng dụng đang mở: ${message.notification?.title}");
-        _showNotificationDialog(
-          message.notification?.title ?? "Thông báo",
-          message.notification?.body ?? "Không có nội dung",
-        );
-      });
-
-      // Khi người dùng nhấn vào thông báo để mở ứng dụng
-      FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-        print("Người dùng mở ứng dụng từ thông báo: ${message.notification?.title}");
-      });
-    } else {
-      print("Quyền thông báo bị từ chối.");
-    }
-  }
-
-  // Hiển thị hộp thoại thông báo
-  void _showNotificationDialog(String title, String body) {
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: Text(title),
-        content: Text(body),
-        actions: [
-          TextButton(
-            child: const Text("Đóng"),
-            onPressed: () => Navigator.of(context).pop(),
-          ),
-        ],
-      ),
-    );
-  }
+  // void setupFirebaseMessaging() async {
+  //   messaging = FirebaseMessaging.instance;
+  //
+  //   // Yêu cầu quyền thông báo
+  //   NotificationSettings settings = await messaging.requestPermission(
+  //     alert: true,
+  //     badge: true,
+  //     sound: true,
+  //   );
+  //
+  //   if (settings.authorizationStatus == AuthorizationStatus.authorized) {
+  //     print("Quyền thông báo đã được cấp!");
+  //
+  //     messaging.getToken().then((token) {
+  //       print("Token người dùng: $token");
+  //     });
+  //
+  //     // Lắng nghe thông báo khi ứng dụng đang mở
+  //     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+  //       print("Nhận thông báo khi ứng dụng đang mở: ${message.notification?.title}");
+  //       _showNotificationDialog(
+  //         message.notification?.title ?? "Thông báo",
+  //         message.notification?.body ?? "Không có nội dung",
+  //       );
+  //     });
+  //
+  //     // Khi người dùng nhấn vào thông báo để mở ứng dụng
+  //     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+  //       print("Người dùng mở ứng dụng từ thông báo: ${message.notification?.title}");
+  //     });
+  //   } else {
+  //     print("Quyền thông báo bị từ chối.");
+  //   }
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -85,48 +67,40 @@ class _HomeScreenState extends State<HomeScreen> {
       resizeToAvoidBottomInset: false,
       backgroundColor: Colors.white,
       appBar: AppBar(
-        centerTitle: true,
-        elevation: 0,
-        title: SizedBox(
-          width: 105.w,
-          height: 28.h,
-          child: Image.asset('assets/images/instagram.jpg'),
-        ),
-        leading: Image.asset('assets/images/camera.jpg'),
-        actions: [
-          // Hiển thị số lượng thông báo chưa đọc
-          StreamBuilder<QuerySnapshot>(
-            stream: _firebaseFirestore
-                .collection('notifications')
-                .where('receiverId', isEqualTo: _auth.currentUser!.uid)
-                .where('read', isEqualTo: false)
-                .snapshots(),
-            builder: (context, snapshot) {
-              int unreadCount = snapshot.hasData ? snapshot.data!.docs.length : 0;
+        leading: StreamBuilder<QuerySnapshot>(
+          stream: _firebaseFirestore
+              .collection('notifications')
+              .where('receiverId', isEqualTo: _auth.currentUser!.uid)
+              .where('read', isEqualTo: false)
+              .snapshots(),
+          builder: (context, snapshot) {
+            int unreadCount = snapshot.hasData ? snapshot.data!.docs.length : 0;
 
-              return GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const NotificationScreen(),
-                    ),
-                  );
-                },
+            return GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const NotificationScreen(),
+                  ),
+                );
+              },
+              child: Padding(
+                padding: const EdgeInsets.only(left: 16, top: 10),
                 child: Stack(
-                  clipBehavior: Clip.none, // Cho phép phần tử nổi ra ngoài
+                  clipBehavior: Clip.none,
                   children: [
                     const Icon(
                       Icons.favorite_border_outlined,
                       color: Colors.black,
-                      size: 30, // Tăng kích thước để cân đối hơn
+                      size: 30,
                     ),
 
                     // Bong bóng thông báo
                     if (unreadCount > 0)
                       Positioned(
-                        right: -5, // Nổi ra bên ngoài bên phải
-                        top: -5,   // Nổi lên trên
+                        right: 6,
+                        top: -5,
                         child: AnimatedContainer(
                           duration: const Duration(milliseconds: 300),
                           padding: const EdgeInsets.all(6),
@@ -146,11 +120,19 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                   ],
                 ),
-              );
+              ),
+            );
+          },
+        ),
 
-            },
-          ),
-
+        elevation: 0,
+        centerTitle: true,
+        title: SizedBox(
+          width: 105.w,
+          height: 28.h,
+          child: Image.asset('assets/images/instagram.jpg'),
+        ),
+        actions: [
           IconButton(
             icon: const Icon(Icons.send, color: Colors.black, size: 25),
             onPressed: () {
@@ -179,7 +161,7 @@ class _HomeScreenState extends State<HomeScreen> {
               return SliverList(
                 delegate: SliverChildBuilderDelegate(
                       (context, index) {
-                        return PostWidget(snapshot.data!.docs[index].data() as Map<String, dynamic>);
+                    return PostWidget(snapshot.data!.docs[index].data() as Map<String, dynamic>);
                   },
                   childCount: snapshot.data!.docs.length,
                 ),
@@ -189,5 +171,6 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
     );
+
   }
 }
