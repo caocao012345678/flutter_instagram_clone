@@ -60,7 +60,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         return AlertDialog(
           title: Text('Log out'),
           content: Text('Are you sure you want to log out?'),
-          actions: <Widget>[
+          actions: [
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop(false);
@@ -79,7 +79,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
     if (shouldLogout == true) {
       await _auth.signOut();
-      Navigator.pushReplacementNamed(context, '/login');
     }
   }
 

@@ -73,7 +73,6 @@ class _PostWidgetState extends State<PostWidget> {
     }
   }
 
-
   // Xóa bài viết
   void _deletePost() async {
     try {
@@ -256,7 +255,6 @@ class _PostWidgetState extends State<PostWidget> {
               ];
             },
           ),
-
         ),
 
         // Ảnh bài viết và hiệu ứng like
@@ -313,14 +311,27 @@ class _PostWidgetState extends State<PostWidget> {
                   ),
                   SizedBox(width: 10.w),
                   GestureDetector(
-                    onTap: () => showBottomSheet(
+                    onTap: () => showModalBottomSheet(
                       context: context,
+                      isScrollControlled: true,
+                      isDismissible: true,
+                      enableDrag: true,
+                      backgroundColor: Colors.transparent,
                       builder: (context) => DraggableScrollableSheet(
                         maxChildSize: 0.6,
                         initialChildSize: 0.6,
                         minChildSize: 0.2,
                         builder: (context, scrollController) {
-                          return Comment('posts', widget.snapshot['postId']);
+                          return Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.only(
+                                topLeft: Radius.circular(25.r),
+                                topRight: Radius.circular(25.r),
+                              ),
+                            ),
+                            child: Comment('posts', widget.snapshot['postId']),
+                          );
                         },
                       ),
                     ),

@@ -67,6 +67,14 @@ class _NotificationScreenState extends State<NotificationScreen> {
                     .doc(notification['senderId'])
                     .get(),
                 builder: (context, userSnapshot) {
+                  if (userSnapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(
+                      child: CircularProgressIndicator(
+                        color: Colors.black,
+                      ),
+                    );
+                  }
+
                   if (!userSnapshot.hasData || userSnapshot.data == null) {
                     return const ListTile(
                       title: Text("User does not exist"),
@@ -103,12 +111,10 @@ class _NotificationScreenState extends State<NotificationScreen> {
                       style: const TextStyle(
                           fontSize: 12, color: Colors.grey),
                     ),
-                    onTap: () async {
+                    onTap: () {
                       if (notification['postId'] != null) {
-                        // Cập nhật trạng thái đã đọc
-                        await _markAsRead(notificationData.id);
+                        _markAsRead(notificationData.id);
 
-                        // Điều hướng đến chi tiết bài viết
                         Navigator.push(
                           context,
                           MaterialPageRoute(
