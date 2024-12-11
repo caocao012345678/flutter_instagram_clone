@@ -57,11 +57,15 @@ class _SignupScreenState extends State<SignupScreen> {
           padding: EdgeInsets.only(bottom: 100.h),
           child: Column(
             children: [
-              SizedBox(width: 96.w, height: 10.h),
+              SizedBox(width: 70.w, height: 20.h),
               Center(
-                child: Image.asset('assets/images/logo.jpg'),
+                child:
+                SizedBox(
+                  height: 60.h,
+                  child: Image.asset('assets/images/Vibe_Logo.png'),
+                ),
               ),
-              SizedBox(width: 96.w, height: 70.h),
+              SizedBox(width: 96.w, height: 20.h),
               InkWell(
                 onTap: () async {
                   File _imagefilee = await ImagePickerr().uploadImage('gallery');
