@@ -33,17 +33,11 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      routes: {
-        '/login': (context) => LoginScreen(() {
-          // Xử lý hành động chuyển màn hình (nếu cần)
-          debugPrint('Chuyển đổi trạng thái từ LoginScreen.');
-        }),
-      },
+    return const MaterialApp(
       debugShowCheckedModeBanner: false,
       home: ScreenUtilInit(
-        designSize: const Size(375, 812),
-        child: const MainPage(),
+        designSize: Size(375, 812),
+        child: MainPage(),
       ),
       onGenerateRoute: AppRoutes.generateRoute,
     );

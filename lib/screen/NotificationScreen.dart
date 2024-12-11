@@ -24,7 +24,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
           .doc(notificationId)
           .update({'read': true});
     } catch (e) {
-      print("Lỗi khi cập nhật trạng thái thông báo: $e");
+      print("Error: $e");
     }
   }
 
@@ -33,7 +33,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'Thông báo',
+          'Notification',
           style: TextStyle(color: Colors.black),
         ),
         backgroundColor: Colors.white,
@@ -51,7 +51,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
           }
 
           if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-            return const Center(child: Text("Không có thông báo nào"));
+            return const Center(child: Text("No notifications"));
           }
 
           return ListView.builder(
@@ -67,9 +67,17 @@ class _NotificationScreenState extends State<NotificationScreen> {
                     .doc(notification['senderId'])
                     .get(),
                 builder: (context, userSnapshot) {
+                  if (userSnapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(
+                      child: CircularProgressIndicator(
+                        color: Colors.black,
+                      ),
+                    );
+                  }
+
                   if (!userSnapshot.hasData || userSnapshot.data == null) {
                     return const ListTile(
-                      title: Text("Người dùng không tồn tại"),
+                      title: Text("User does not exist"),
                     );
                   }
 
@@ -77,9 +85,8 @@ class _NotificationScreenState extends State<NotificationScreen> {
                   userSnapshot.data!.data() as Map<String, dynamic>;
                   final senderName = userData['username'];
                   final senderProfileImage =
-                      userData['profileImage'] ?? '';
+                      userData['profile'] ?? '';
 
-                  /// Kiểm tra thông báo đã đọc hay chưa
                   final bool isRead = notification['read'] ?? false;
 
                   return ListTile(
@@ -92,8 +99,8 @@ class _NotificationScreenState extends State<NotificationScreen> {
                     ),
                     title: Text(
                       notification['type'] == 'like'
-                          ? '$senderName đã thích bài viết của bạn'
-                          : '$senderName đã bình luận: ${notification['commentText'] ?? ''}',
+                          ? '$senderName liked your post'
+                          : '$senderName commented: ${notification['commentText'] ?? ''}',
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: isRead ? FontWeight.normal : FontWeight.bold,
@@ -104,19 +111,10 @@ class _NotificationScreenState extends State<NotificationScreen> {
                       style: const TextStyle(
                           fontSize: 12, color: Colors.grey),
                     ),
-                    trailing: notification['postImage'] != null
-                        ? SizedBox(
-                      width: 50.w,
-                      height: 50.h,
-                      child: CachedImage(notification['postImage']),
-                    )
-                        : null,
-                    onTap: () async {
+                    onTap: () {
                       if (notification['postId'] != null) {
-                        // Cập nhật trạng thái đã đọc
-                        await _markAsRead(notificationData.id);
+                        _markAsRead(notificationData.id);
 
-                        // Điều hướng đến chi tiết bài viết
                         Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -139,7 +137,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
 
   /// Định dạng thời gian từ Firestore
   String _formatTimestamp(Timestamp? timestamp) {
-    if (timestamp == null) return 'Không rõ thời gian';
+    if (timestamp == null) return 'Unknown time';
     final date = timestamp.toDate();
     return '${date.day}/${date.month}/${date.year} ${date.hour}:${date.minute}';
   }

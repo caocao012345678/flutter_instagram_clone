@@ -9,6 +9,8 @@ import 'package:flutter_instagram_clone/widgets/like_animation.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:date_format/date_format.dart';
 
+import '../Chat/chat_detail_screen.dart';
+
 class PostWidget extends StatefulWidget {
   final Map<String, dynamic> snapshot;
   const PostWidget(this.snapshot, {super.key});
@@ -27,7 +29,14 @@ class _PostWidgetState extends State<PostWidget> {
     super.initState();
     currentUserId = _auth.currentUser!.uid;
   }
-
+  Future<int> _getCommentCount() async {
+    final snapshot = await FirebaseFirestore.instance
+        .collection('posts')
+        .doc(widget.snapshot['postId'])
+        .collection('comments')
+        .get();
+    return snapshot.docs.length;
+  }
   // Gửi thông báo khi có người like bài viết
   Future<void> _sendLikeNotification(String postId, String postOwnerUid) async {
     try {
@@ -40,23 +49,26 @@ class _PostWidgetState extends State<PostWidget> {
         'read': false,
       });
     } catch (e) {
-      print("Lỗi khi gửi thông báo: $e");
+      print("Error: $e");
     }
   }
 
   // Like bài viết và gửi thông báo nếu cần
   void _likePost() {
+    final postOwnerUid = widget.snapshot['uid'];
     Firebase_Firestor().like(
       like: widget.snapshot['like'],
       type: 'posts',
       uid: currentUserId,
       postId: widget.snapshot['postId'],
     );
-
+    if (postOwnerUid == currentUserId) {
+      return;
+    }
     if (!widget.snapshot['like'].contains(currentUserId)) {
       _sendLikeNotification(
         widget.snapshot['postId'],
-        widget.snapshot['uid'],
+        postOwnerUid,
       );
     }
   }
@@ -70,11 +82,11 @@ class _PostWidgetState extends State<PostWidget> {
           .delete();
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Bài viết đã bị xóa')),
+        const SnackBar(content: Text('Post has been deleted.')),
       );
     } catch (error) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Xóa bài viết thất bại: $error')),
+        SnackBar(content: Text('Delete post failed: $error')),
       );
     }
   }
@@ -88,15 +100,15 @@ class _PostWidgetState extends State<PostWidget> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Chỉnh sửa bài viết'),
+          title: const Text('Edit post caption'),
           content: TextField(
             controller: captionController,
-            decoration: const InputDecoration(hintText: 'Nhập caption mới'),
+            decoration: const InputDecoration(hintText: 'Write new caption'),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Hủy'),
+              child: const Text('Cancel'),
             ),
             TextButton(
               onPressed: () async {
@@ -114,20 +126,20 @@ class _PostWidgetState extends State<PostWidget> {
 
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
-                        content: Text('Cập nhật thành công'),
+                        content: Text('Update successful'),
                       ),
                     );
                     Navigator.pop(context);
                   } catch (error) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text('Cập nhật thất bại: $error'),
+                        content: Text('Update failed: $error'),
                       ),
                     );
                   }
                 }
               },
-              child: const Text('Lưu'),
+              child: const Text('Save'),
             ),
           ],
         );
@@ -152,8 +164,8 @@ class _PostWidgetState extends State<PostWidget> {
             },
             child: ClipOval(
               child: SizedBox(
-                width: 35.w,
-                height: 35.h,
+                width: 40.w,
+                height: 40.h,
                 child: CachedImage(widget.snapshot['profileImage']),
               ),
             ),
@@ -162,29 +174,57 @@ class _PostWidgetState extends State<PostWidget> {
             widget.snapshot['username'],
             style: TextStyle(fontSize: 13.sp),
           ),
-          subtitle: Text(
-            widget.snapshot['location'],
-            style: TextStyle(fontSize: 11.sp),
-          ),
           trailing: PopupMenuButton<String>(
             icon: const Icon(Icons.more_horiz),
-            onSelected: (value) {
+            onSelected: (value) async {
               switch (value) {
-                case 'Xóa':
+                case 'Delete':
                   _deletePost();
                   break;
-                case 'Chỉnh sửa':
+                case 'Edit Caption':
                   _editPost();
                   break;
-                case 'Nhắn tin':
-                  ();
+                case 'Chat':
+                  try {
+                    final currentUserId = FirebaseAuth.instance.currentUser!.uid;
+                    final otherUserId = widget.snapshot['uid'];
+
+                    final chatId = currentUserId.hashCode <= otherUserId.hashCode
+                        ? '$currentUserId\_$otherUserId'
+                        : '$otherUserId\_$currentUserId';
+
+                    final chatRef = FirebaseFirestore.instance
+                        .collection('chats')
+                        .doc(chatId);
+
+                    await chatRef.set({
+                      'users': [currentUserId, otherUserId],
+                      'lastMessage': '',
+                      'lastMessageTime': FieldValue.serverTimestamp(),
+                    }, SetOptions(merge: true));
+
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ChatDetailScreen(
+                          chatId: chatId,
+                          otherUserId: otherUserId,
+                        ),
+                      ),
+                    );
+                  } catch (e) {
+                    print('Error creating or navigating to chat: $e');
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Error creating or opening chat!')),
+                    );
+                  }
                   break;
-                case 'Chặn':
+                case 'Block':
                   ();
                   break;
                 default:
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Tùy chọn không hợp lệ')),
+                    const SnackBar(content: Text('Error')),
                   );
               }
             },
@@ -195,27 +235,26 @@ class _PostWidgetState extends State<PostWidget> {
               return [
                 if (isOwner) ...[
                   const PopupMenuItem<String>(
-                    value: 'Xóa',
-                    child: Text('Xóa bài viết'),
+                    value: 'Delete',
+                    child: Text('Delete post'),
                   ),
                   const PopupMenuItem<String>(
-                    value: 'Chỉnh sửa',
-                    child: Text('Chỉnh sửa bài viết'),
+                    value: 'Edit Caption',
+                    child: Text('Edit Caption'),
                   ),
                 ] else ...[
                   const PopupMenuItem<String>(
-                    value: 'Nhắn tin',
-                    child: Text('Nhắn tin'),
+                    value: 'Chat',
+                    child: Text('Chat'),
                   ),
                   const PopupMenuItem<String>(
-                    value: 'Chặn',
-                    child: Text('Chặn người dùng'),
+                    value: 'Block',
+                    child: Text('Block'),
                   ),
                 ]
               ];
             },
           ),
-
         ),
 
         // Ảnh bài viết và hiệu ứng like
@@ -261,40 +300,96 @@ class _PostWidgetState extends State<PostWidget> {
                         color: widget.snapshot['like'].contains(currentUserId)
                             ? Colors.red
                             : Colors.black,
-                        size: 24.w,
+                        size: 26.w,
                       ),
                       onPressed: _likePost,
                     ),
                     isAnimating: widget.snapshot['like'].contains(currentUserId),
                   ),
+                  Text("${widget.snapshot['like'].length}",
+                    style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.w500),
+                  ),
                   SizedBox(width: 10.w),
                   GestureDetector(
-                    onTap: () => showBottomSheet(
+                    onTap: () => showModalBottomSheet(
                       context: context,
+                      isScrollControlled: true,
+                      isDismissible: true,
+                      enableDrag: true,
+                      backgroundColor: Colors.transparent,
                       builder: (context) => DraggableScrollableSheet(
                         maxChildSize: 0.6,
                         initialChildSize: 0.6,
                         minChildSize: 0.2,
                         builder: (context, scrollController) {
-                          return Comment('posts', widget.snapshot['postId']);
+                          return Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.only(
+                                topLeft: Radius.circular(25.r),
+                                topRight: Radius.circular(25.r),
+                              ),
+                            ),
+                            child: Comment('posts', widget.snapshot['postId']),
+                          );
                         },
                       ),
                     ),
                     child: Image.asset(
                       'assets/images/comment.webp',
-                      height: 28.h,
+                      height: 30.h,
                     ),
                   ),
+                  SizedBox(width: 5.w),
+                  StreamBuilder<QuerySnapshot>(
+                    stream: FirebaseFirestore.instance
+                        .collection('posts')
+                        .doc(widget.snapshot['postId'])
+                        .collection('comments')
+                        .snapshots(),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return Text(
+                          "...",
+                          style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.w500),
+                        );
+                      }
+                      if (snapshot.hasError || !snapshot.hasData) {
+                        return Text(
+                          "0",
+                          style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.w500),
+                        );
+                      }
+                      final int commentCount = snapshot.data!.docs.length;
+                      return Text(
+                        "$commentCount",
+                        style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.w500),
+                      );
+                    },
+                  )
                 ],
               ),
 
-              // Caption và ngày đăng
-              Text("${widget.snapshot['like'].length} lượt thích", style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w500)),
               Padding(
                 padding: EdgeInsets.only(top: 5.h),
-                child: Text("${widget.snapshot['username']} : ${widget.snapshot['caption']}", style: TextStyle(fontSize: 13.sp)),
+                child: Text("${widget.snapshot['caption']}", style: TextStyle(fontSize: 13.sp)),
               ),
               Text(formatDate(widget.snapshot['time'].toDate(), [dd, '-', mm, '-', yyyy]), style: TextStyle(fontSize: 11.sp, color: Colors.grey)),
+            ],
+          ),
+        ),
+        SizedBox(
+          height: 50.h, // Chiều cao cụ thể
+          child: Stack(
+            children: [
+              Positioned(
+                top: 8.h, // Vị trí dọc
+                child: Container(
+                  width: MediaQuery.of(context).size.width,
+                  height: 9.h,
+                  color: Colors.grey,
+                ),
+              ),
             ],
           ),
         ),
