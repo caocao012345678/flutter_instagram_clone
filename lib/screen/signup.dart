@@ -18,6 +18,7 @@ class SignupScreen extends StatefulWidget {
 }
 
 class _SignupScreenState extends State<SignupScreen> {
+  bool _isLoading = false;
   final email = TextEditingController();
   FocusNode email_F = FocusNode();
   final password = TextEditingController();
@@ -138,25 +139,31 @@ class _SignupScreenState extends State<SignupScreen> {
   }
 
   Widget Signup() {
-    bool _isLoading = false;
-
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 10.w),
       child: InkWell(
         onTap: () async {
+          if (email.text.isEmpty || password.text.isEmpty || username.text.isEmpty) {
+            dialogBuilder(context, "Vui lòng điền đầy đủ thông tin.");
+            return;
+          }
+
           setState(() {
             _isLoading = true;
           });
+
           try {
-            final defaultImage = await getDefaultImage(); // Tạo file từ asset nếu cần
+            final defaultImage = await getDefaultImage(); // Giả sử có hàm tạo file ảnh mặc định
             await Authentication().Signup(
               email: email.text.trim(),
               password: password.text.trim(),
               passwordConfirme: passwordConfirme.text.trim(),
               username: username.text.trim(),
               bio: bio.text.trim(),
-              profile: _imageFile ?? defaultImage, // Sử dụng ảnh mặc định
+              profile: _imageFile ?? defaultImage,
             );
+            // Nếu đăng ký thành công
+            Navigator.of(context).pop(); // Điều hướng đến trang khác
           } on exceptions catch (e) {
             dialogBuilder(context, e.message);
           } finally {
@@ -174,9 +181,9 @@ class _SignupScreenState extends State<SignupScreen> {
             borderRadius: BorderRadius.circular(10.r),
           ),
           child: _isLoading
-              ? CircularProgressIndicator(color: Colors.white)
+              ? const CircularProgressIndicator(color: Colors.white)
               : Text(
-            'Sign up',
+            'Đăng ký',
             style: TextStyle(
               fontSize: 23.sp,
               color: Colors.white,

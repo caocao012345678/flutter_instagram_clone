@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:date_format/date_format.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_instagram_clone/data/firebase_service/firestor.dart';
 import 'package:flutter_instagram_clone/util/image_cached.dart';
@@ -17,7 +18,33 @@ class Comment extends StatefulWidget {
 class _CommentState extends State<Comment> {
   final comment = TextEditingController();
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  bool islodaing = false;
+  late String currentUserId;
+  bool isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    currentUserId = FirebaseAuth.instance.currentUser!.uid;
+  }
+
+  Future<void> _sendCommentNotification(
+      String postId, String postOwnerUid, String commentText) async {
+    try {
+      await FirebaseFirestore.instance.collection('notifications').add({
+        'postId': postId,
+        'senderId': currentUserId,
+        'receiverId': postOwnerUid,
+        'type': 'comment',
+        'commentText': commentText,
+        'timestamp': FieldValue.serverTimestamp(),
+        'read': false,
+      });
+    } catch (e) {
+      print("Error sending comment notification: $e");
+    }
+  }
+
+
   @override
   Widget build(BuildContext context) {
     return ClipRRect(
@@ -61,58 +88,101 @@ class _CommentState extends State<Comment> {
                 );
               },
             ),
-            Positioned(
-              bottom: 0,
-              right: 0,
-              left: 0,
-              child: Container(
-                height: 60.h,
-                width: double.infinity,
-                color: Colors.white,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    SizedBox(
-                      height: 45.h,
-                      width: 260.w,
-                      child: TextField(
-                        controller: comment,
-                        maxLines: 4,
-                        decoration: const InputDecoration(
-                          hintText: 'Add a comment',
-                          border: InputBorder.none,
+            Align(
+              alignment: Alignment.bottomCenter,
+              child: Padding(
+                padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+                child: Container(
+                  height: 60.h,
+                  width: double.infinity,
+                  color: Colors.white,
+                  padding: EdgeInsets.symmetric(horizontal: 10.w),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: comment,
+                          maxLines: 4,
+                          decoration: const InputDecoration(
+                            hintText: 'Add a comment',
+                            border: InputBorder.none,
+                          ),
                         ),
                       ),
-                    ),
-                    GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          islodaing = true;
-                        });
-                        if (comment.text.isNotEmpty) {
-                          Firebase_Firestor().Comments(
-                            comment: comment.text,
-                            type: widget.type,
-                            uidd: widget.uid,
-                          );
-                        }
-                        setState(() {
-                          islodaing = false;
-                          comment.clear();
-                        });
-                      },
-                      child: islodaing
-                          ? SizedBox(
-                              width: 10.w,
-                              height: 10.h,
-                              child: const CircularProgressIndicator(),
-                            )
-                          : const Icon(Icons.send),
-                    ),
-                  ],
+                      GestureDetector(
+                        onTap: () async {
+                          if (comment.text.isNotEmpty && !isLoading) {
+                            setState(() {
+                              isLoading = true;
+                            });
+
+                            try {
+                              // Lưu bình luận vào Firestore
+                              await Firebase_Firestor().Comments(
+                                comment: comment.text,
+                                type: widget.type,
+                                uidd: widget.uid,
+                              );
+
+                              // Lấy thông tin bài viết
+                              final postSnapshot = await FirebaseFirestore.instance
+                                  .collection(widget.type)
+                                  .doc(widget.uid)
+                                  .get();
+
+                              if (postSnapshot.exists) {
+                                final postOwnerUid = postSnapshot.data()!['uid'];
+
+                                // Gửi thông báo nếu không phải là chủ bài viết
+                                if (postOwnerUid != currentUserId) {
+                                  await _sendCommentNotification(
+                                    widget.uid,
+                                    postOwnerUid,
+                                    comment.text,
+                                  );
+                                }
+                              }
+
+                              setState(() {
+                                comment.clear();
+                                isLoading = false;
+                              });
+
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                    content: Text('Comment added successfully')),
+                              );
+                            } catch (e) {
+                              setState(() {
+                                isLoading = false;
+                              });
+
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                    content: Text('Failed to add comment: $e')),
+                              );
+                            }
+                          }
+                        },
+
+                        /// Hiển thị icon hoặc loading
+                        child: isLoading
+                            ? SizedBox(
+                          width: 20.w,
+                          height: 20.h,
+                          child: const CircularProgressIndicator(
+                            color: Colors.black,
+                            strokeWidth: 2,
+                          ),
+                        )
+                            : const Icon(Icons.send, color: Colors.black),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
+
           ],
         ),
       ),

@@ -1,13 +1,11 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_instagram_clone/data/firebase_service/firestor.dart';
 import 'package:flutter_instagram_clone/data/firebase_service/storage.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class AddPostTextScreen extends StatefulWidget {
-  File _file;
+  final File _file;
   AddPostTextScreen(this._file, {super.key});
 
   @override
@@ -17,91 +15,88 @@ class AddPostTextScreen extends StatefulWidget {
 class _AddPostTextScreenState extends State<AddPostTextScreen> {
   final caption = TextEditingController();
   final location = TextEditingController();
-  bool islooding = false;
+  bool isLoading = false;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        iconTheme: IconThemeData(color: Colors.black),
+        iconTheme: const IconThemeData(color: Colors.black),
         backgroundColor: Colors.white,
         elevation: 0,
-        title: Text(
-          'Bài đăng mới',
+        title: const Text(
+          'New post',
           style: TextStyle(color: Colors.black),
         ),
-        centerTitle: false,
       ),
       body: SafeArea(
-        child: islooding
-            ? Center(
-          child: CircularProgressIndicator(
-            color: Colors.black,
-          ),
+        child: isLoading
+            ? const Center(
+          child: CircularProgressIndicator(color: Colors.black),
         )
             : Padding(
           padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 10.h),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Row(
-                children: [
-                  // Ảnh bài đăng
-                  Container(
-                    width: 65.w,
-                    height: 65.h,
-                    decoration: BoxDecoration(
-                      color: Colors.amber,
-                      image: DecorationImage(
-                        image: FileImage(widget._file),
-                        fit: BoxFit.cover,
-                      ),
+              Center(
+                child: Container(
+                  width: 250.w,
+                  height: 250.h,
+                  decoration: BoxDecoration(
+                    color: Colors.amber,
+                    image: DecorationImage(
+                      image: FileImage(widget._file),
+                      fit: BoxFit.cover,
                     ),
                   ),
-                  SizedBox(width: 10.w),
-                  // Vùng nhập caption
-                  Expanded(
-                    child: TextField(
-                      controller: caption,
-                      decoration: const InputDecoration(
-                        hintText: 'Hãy viết gì đấy...',
-                        border: InputBorder.none,
-                      ),
-                      maxLines: null,
-                      style: TextStyle(fontSize: 14.sp),
-                    ),
-                  ),
-                ],
+                ),
               ),
-              Align(
-                alignment: Alignment.centerRight,
+              SizedBox(height: 20.h),
+              // Vùng nhập Caption
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 15.w),
+                child: TextField(
+                  controller: caption,
+                  decoration: const InputDecoration(
+                    hintText: 'Write something...',
+                    border: InputBorder.none,
+                  ),
+                  maxLines: null,
+                  style: TextStyle(fontSize: 14.sp),
+                ),
+              ),
+              SizedBox(height: 10.h),
+              // Nút "Đăng bài"
+              Center(
                 child: GestureDetector(
                   onTap: () async {
                     setState(() {
-                      islooding = true;
+                      isLoading = true;
                     });
-                    String post_url = await StorageMethod()
+                    String postUrl = await StorageMethod()
                         .uploadImageToStorage('post', widget._file);
                     await Firebase_Firestor().CreatePost(
-                      postImage: post_url,
+                      postImage: postUrl,
                       caption: caption.text,
                       location: location.text,
                     );
                     setState(() {
-                      islooding = false;
+                      isLoading = false;
                     });
                     Navigator.of(context).pop();
                   },
                   child: Container(
-                    margin: EdgeInsets.only(top: 10.h),
                     padding: EdgeInsets.symmetric(
-                        horizontal: 20.w, vertical: 10.h),
+                      horizontal: 30.w,
+                      vertical: 12.h,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.black,
                       borderRadius: BorderRadius.circular(10.r),
                     ),
                     child: Text(
-                      'Đăng bài',
+                      'Post',
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 16.sp,

@@ -11,6 +11,7 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  bool isLoading = false;
   final email = TextEditingController();
   FocusNode email_F = FocusNode();
   final password = TextEditingController();
@@ -88,14 +89,42 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
     );
   }
-
+  void _showSnackbar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: Colors.redAccent,
+      ),
+    );
+  }
   Widget login() {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 10.w),
       child: InkWell(
         onTap: () async {
-          await Authentication()
-              .Login(email: email.text, password: password.text);
+          if (email.text.isEmpty || password.text.isEmpty) {
+            _showSnackbar("Vui lòng điền đầy đủ thông tin.");
+            return;
+          }
+
+          setState(() {
+            isLoading = true;
+          });
+
+          try {
+            await Authentication().Login(
+              email: email.text.trim(),
+              password: password.text.trim(),
+            );
+          } catch (e) {
+            String errorMessage = e.toString().replaceAll("Exception:", "").trim();
+            _showSnackbar(errorMessage);
+          } finally {
+            setState(() {
+              isLoading = false;
+            });
+          }
         },
         child: Container(
           alignment: Alignment.center,
@@ -105,8 +134,10 @@ class _LoginScreenState extends State<LoginScreen> {
             color: Colors.black,
             borderRadius: BorderRadius.circular(10.r),
           ),
-          child: Text(
-            'Login',
+          child: isLoading
+              ? const CircularProgressIndicator(color: Colors.white)
+              : Text(
+            'Sign in',
             style: TextStyle(
               fontSize: 23.sp,
               color: Colors.white,
