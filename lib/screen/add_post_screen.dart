@@ -38,21 +38,21 @@ class _AddPostScreenState extends State<AddPostScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Quyền bị từ chối'),
+        title: Text('Permission denied'),
         content: Text(
-          'Ứng dụng cần quyền truy cập ảnh để tải ảnh lên. Vui lòng cấp quyền để tiếp tục.',
+          'The app needs photo access to upload photos. Please grant permission to continue.',
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Đóng'),
+            child: Text('Close'),
           ),
           TextButton(
             onPressed: () {
               Navigator.pop(context);
               requestPermissionAndFetchMedia(); // Thử lại yêu cầu quyền
             },
-            child: Text('Thử lại'),
+            child: Text('Try again'),
           ),
         ],
       ),
@@ -63,21 +63,21 @@ class _AddPostScreenState extends State<AddPostScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Quyền bị từ chối vĩnh viễn'),
+        title: Text('Permission Permanently Denied'),
         content: Text(
-          'Bạn đã từ chối quyền truy cập ảnh vĩnh viễn. Hãy vào cài đặt và cấp quyền cho ứng dụng.',
+          'You have permanently denied photo access. Go to settings and grant permission to the app.',
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Đóng'),
+            child: Text('Close'),
           ),
           TextButton(
             onPressed: () async {
               Navigator.pop(context);
               await PhotoManager.openSetting(); // Mở cài đặt ứng dụng
             },
-            child: Text('Mở Cài đặt'),
+            child: Text('Open Settings'),
           ),
         ],
       ),
@@ -169,46 +169,48 @@ class _AddPostScreenState extends State<AddPostScreen> {
         ],
       ),
       body: SafeArea(
-        child: SingleChildScrollView(
-          child: Container(
-            child: Column(
-              children: [
-                SizedBox(
-                  height: 375.h,
-                  child: GridView.builder(
-                    itemCount: _mediaList.isEmpty ? _mediaList.length : 1,
-                    gridDelegate:
-                    const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 1,
-                      mainAxisSpacing: 1,
-                      crossAxisSpacing: 1,
-                    ),
-                    itemBuilder: (context, index) {
-                      return _mediaList[indexx];
-                    },
-                  ),
+        child: Column(
+          children: [
+            // Hình Ảnh Được Chọn
+            SizedBox(
+              height: 375.h,
+              child: GridView.builder(
+                physics: const NeverScrollableScrollPhysics(), // Không cuộn riêng
+                itemCount: _mediaList.isEmpty ? 0 : 1,
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 1,
+                  mainAxisSpacing: 1,
+                  crossAxisSpacing: 1,
                 ),
-                Container(
-                  width: double.infinity,
-                  height: 40.h,
-                  color: Colors.white,
-                  child: Row(
-                    children: [
-                      SizedBox(width: 10.w),
-                      Text(
-                        'Recent',
-                        style: TextStyle(
-                            fontSize: 15.sp, fontWeight: FontWeight.w600),
-                      ),
-                    ],
+                itemBuilder: (context, index) {
+                  return _mediaList[indexx];
+                },
+              ),
+            ),
+
+            // Tiêu Đề "Recent"
+            Container(
+              width: double.infinity,
+              height: 40.h,
+              color: Colors.white,
+              child: Row(
+                children: [
+                  SizedBox(width: 10.w),
+                  Text(
+                    'Recent',
+                    style: TextStyle(fontSize: 15.sp, fontWeight: FontWeight.w600),
                   ),
-                ),
-                GridView.builder(
-                  shrinkWrap: true,
+                ],
+              ),
+            ),
+            Expanded(
+              child: Container(
+                color: Colors.grey.shade300, // Đặt màu nền xám
+                child: GridView.builder(
                   itemCount: _mediaList.length,
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 3,
-                    mainAxisSpacing: 1,
+                    mainAxisSpacing: 2,
                     crossAxisSpacing: 2,
                   ),
                   itemBuilder: (context, index) {
@@ -223,11 +225,13 @@ class _AddPostScreenState extends State<AddPostScreen> {
                     );
                   },
                 ),
-              ],
+              ),
             ),
-          ),
+
+          ],
         ),
       ),
+
     );
   }
 }

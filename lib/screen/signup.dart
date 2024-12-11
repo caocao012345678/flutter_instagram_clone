@@ -6,6 +6,7 @@ import 'package:flutter_instagram_clone/data/firebase_service/firebase_auth.dart
 import 'package:flutter_instagram_clone/util/dialog.dart';
 import 'package:flutter_instagram_clone/util/exeption.dart';
 import 'package:flutter_instagram_clone/util/imagepicker.dart';
+import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -48,71 +49,76 @@ class _SignupScreenState extends State<SignupScreen> {
     return file;
   }
 
+  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      resizeToAvoidBottomInset: false,
-      backgroundColor: Colors.white,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: EdgeInsets.only(bottom: 100.h),
-          child: Column(
-            children: [
-              SizedBox(width: 70.w, height: 20.h),
-              Center(
-                child:
-                SizedBox(
-                  height: 60.h,
-                  child: Image.asset('assets/images/Vibe_Logo.png'),
-                ),
+    return KeyboardVisibilityBuilder(
+      builder: (context, isKeyboardVisible) {
+        return Scaffold(
+          resizeToAvoidBottomInset: true,
+          backgroundColor: Colors.white,
+          body: SafeArea(
+            child: SingleChildScrollView(
+              reverse: isKeyboardVisible,
+              padding: EdgeInsets.only(bottom: (MediaQuery.of(context).viewInsets.bottom)+80.h),
+              child: Column(
+                children: [
+                  SizedBox(width: 70.w, height: 10.h),
+                  Center(
+                    child: SizedBox(
+                      height: 60.h,
+                      child: Image.asset('assets/images/Vibe_Logo.png'),
+                    ),
+                  ),
+                  SizedBox(width: 96.w, height: 20.h),
+                  InkWell(
+                    onTap: () async {
+                      File _imagefilee = await ImagePickerr().uploadImage('gallery');
+                      setState(() {
+                        _imageFile = _imagefilee;
+                      });
+                    },
+                    child: CircleAvatar(
+                      radius: 50.r,
+                      backgroundColor: Colors.grey,
+                      child: _imageFile == null
+                          ? CircleAvatar(
+                        radius: 50.r,
+                        backgroundImage: const AssetImage('assets/images/person.png'),
+                        backgroundColor: Colors.grey.shade200,
+                      )
+                          : CircleAvatar(
+                        radius: 50.r,
+                        backgroundImage: Image.file(
+                          _imageFile!,
+                          fit: BoxFit.cover,
+                        ).image,
+                        backgroundColor: Colors.grey.shade200,
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 40.h),
+                  Textfild(email, email_F, 'Email', Icons.email),
+                  SizedBox(height: 15.h),
+                  Textfild(username, username_F, 'Username', Icons.person),
+                  SizedBox(height: 15.h),
+                  Textfild(bio, bio_F, 'Bio', Icons.info),
+                  SizedBox(height: 15.h),
+                  Textfild(password, password_F, 'Password', Icons.lock, isPassword: true),
+                  SizedBox(height: 15.h),
+                  Textfild(passwordConfirme, passwordConfirme_F, 'Password Confirm', Icons.lock, isPassword: true),
+                  SizedBox(height: 40.h),
+                  Signup(),
+                  SizedBox(height: 15.h),
+                  Have(),
+                ],
               ),
-              SizedBox(width: 96.w, height: 20.h),
-              InkWell(
-                onTap: () async {
-                  File _imagefilee = await ImagePickerr().uploadImage('gallery');
-                  setState(() {
-                    _imageFile = _imagefilee;
-                  });
-                },
-                child: CircleAvatar(
-                  radius: 50.r,
-                  backgroundColor: Colors.grey,
-                  child: _imageFile == null
-                      ? CircleAvatar(
-                          radius: 50.r,
-                          backgroundImage: AssetImage('assets/images/person.png'),
-                          backgroundColor: Colors.grey.shade200,
-                        )
-                      : CircleAvatar(
-                          radius: 50.r,
-                          backgroundImage: Image.file(
-                            _imageFile!,
-                            fit: BoxFit.cover,
-                          ).image,
-                          backgroundColor: Colors.grey.shade200,
-                        ),
-                ),
-              ),
-              SizedBox(height: 40.h),
-              Textfild(email, email_F, 'Email', Icons.email),
-              SizedBox(height: 15.h),
-              Textfild(username, username_F, 'username', Icons.person),
-              SizedBox(height: 15.h),
-              Textfild(bio, bio_F, 'bio', Icons.abc),
-              SizedBox(height: 15.h),
-              Textfild(password, password_F, 'Password', Icons.lock, isPassword: true),
-              SizedBox(height: 15.h),
-              Textfild(passwordConfirme, passwordConfirme_F, 'Password Confirme',
-                  Icons.lock,isPassword: true),
-              SizedBox(height: 15.h),
-              Signup(),
-              SizedBox(height: 15.h),
-              Have()
-            ],
+            ),
           ),
-        ),
-      )
+        );
+      },
     );
   }
+
 
   Widget Have() {
     return Padding(
@@ -121,7 +127,7 @@ class _SignupScreenState extends State<SignupScreen> {
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
           Text(
-            "Don you have account?  ",
+            "Already have an account?  ",
             style: TextStyle(
               fontSize: 14.sp,
               color: Colors.grey,
@@ -148,7 +154,7 @@ class _SignupScreenState extends State<SignupScreen> {
       child: InkWell(
         onTap: () async {
           if (email.text.isEmpty || password.text.isEmpty || username.text.isEmpty) {
-            dialogBuilder(context, "Vui lòng điền đầy đủ thông tin.");
+            dialogBuilder(context, "Please fill in all information.");
             return;
           }
 
@@ -187,7 +193,7 @@ class _SignupScreenState extends State<SignupScreen> {
           child: _isLoading
               ? const CircularProgressIndicator(color: Colors.white)
               : Text(
-            'Đăng ký',
+            'Sign up',
             style: TextStyle(
               fontSize: 23.sp,
               color: Colors.white,

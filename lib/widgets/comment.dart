@@ -93,9 +93,12 @@ class _CommentState extends State<Comment> {
               child: Padding(
                 padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
                 child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade200, // Màu nền xám
+                    borderRadius: BorderRadius.circular(15.r), // Bo góc
+                  ),
                   height: 60.h,
                   width: double.infinity,
-                  color: Colors.white,
                   padding: EdgeInsets.symmetric(horizontal: 10.w),
                   child: Row(
                     children: [
@@ -180,6 +183,7 @@ class _CommentState extends State<Comment> {
                     ],
                   ),
                 ),
+
               ),
             ),
 
