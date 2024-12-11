@@ -39,6 +39,8 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen> {
   bool _showScrollToBottomButton = false;
   String? _replyingTo;
   String lastMessageTime = '';
+  bool _isUploading = false;
+
 
   String getStatusIcon(String status) {
     switch (status) {
@@ -221,29 +223,41 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen> {
   Future<void> _sendImage(ImageSource source) async {
     final picker = ImagePicker();
     final pickedFile = await picker.pickImage(source: source);
+
     if (pickedFile != null) {
-      final file = File(pickedFile.path);
-      final fileName = DateTime
-          .now()
-          .millisecondsSinceEpoch
-          .toString();
-      final ref = FirebaseStorage.instance.ref().child(
-          'chat_images/$fileName.jpg');
-
-      await ref.putFile(file);
-      final downloadUrl = await ref.getDownloadURL();
-
-      final currentUserId = FirebaseAuth.instance.currentUser!.uid;
-      await FirebaseFirestore.instance
-          .collection('chats')
-          .doc(widget.chatId)
-          .collection('messages')
-          .add({
-        'senderId': currentUserId,
-        'content': downloadUrl,
-        'timestamp': FieldValue.serverTimestamp(),
-        'type': 'image',
+      setState(() {
+        _isUploading = true; // Bắt đầu tải lên
       });
+
+      try {
+        final file = File(pickedFile.path);
+        final fileName = DateTime.now().millisecondsSinceEpoch.toString();
+        final ref = FirebaseStorage.instance.ref().child('chat_images/$fileName.jpg');
+
+        await ref.putFile(file);
+        final downloadUrl = await ref.getDownloadURL();
+
+        final currentUserId = FirebaseAuth.instance.currentUser!.uid;
+        await FirebaseFirestore.instance
+            .collection('chats')
+            .doc(widget.chatId)
+            .collection('messages')
+            .add({
+          'senderId': currentUserId,
+          'content': downloadUrl,
+          'timestamp': FieldValue.serverTimestamp(),
+          'type': 'image',
+        });
+
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Có lỗi xảy ra khi tải ảnh: $e')),
+        );
+      } finally {
+        setState(() {
+          _isUploading = false; // Hoàn thành tải lên
+        });
+      }
     }
   }
 
@@ -372,7 +386,10 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen> {
     }
 
 
-    return Scaffold(
+
+    return Stack(
+        children: [
+    Scaffold(
       appBar: AppBar(
         title: Row(
           children: [
@@ -422,7 +439,9 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen> {
                     ),
                 ],
               ),
-            ),
+
+
+    ),
           Expanded(
             child: StreamBuilder<QuerySnapshot>(
               stream: FirebaseFirestore.instance
@@ -449,15 +468,15 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen> {
                     final timestamp = messageData['timestamp'] is Timestamp
                         ? messageData['timestamp'] as Timestamp
                         : null;
-                    // Determine the last message time
+
                     if (timestamp != null) {
                       lastMessageTime = formatTimestamp(timestamp);
                     } else {
-                      lastMessageTime = 'Unknown time'; // Or any fallback value
+                      lastMessageTime = 'Unknown time';
                     }
 
                     return GestureDetector(
-                      key: ValueKey(messageData['id'] ?? index), // Add a unique key
+                      key: ValueKey(messageData['id'] ?? index),
                       onLongPress: () {
                         MessageActions.showMessageMenu(
                           context: context,
@@ -479,130 +498,82 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen> {
                           contentOrUrl: messageData['content'],
                           timestamp: messageData['timestamp'],
                         );
-
                       },
-
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
                         children: [
-                          if (!isMe) ...[
-                            // Avatar and username for other users (StreamBuilder)
+                          if (!isMe)
                             StreamBuilder<DocumentSnapshot>(
                               stream: FirebaseFirestore.instance.collection('users').doc(senderId).snapshots(),
                               builder: (context, snapshot) {
-                                if (!snapshot.hasData) return const Text("Đang tải...");
+                                if (!snapshot.hasData) return const SizedBox.shrink();
                                 final userData = snapshot.data!.data() as Map<String, dynamic>;
 
                                 return Row(
                                   children: [
                                     CircleAvatar(
+                                      radius: 18,
                                       backgroundImage: userData['profile'] != null
                                           ? NetworkImage(userData['profile'])
                                           : const AssetImage('assets/default_avatar.png') as ImageProvider,
                                     ),
                                     const SizedBox(width: 10),
-                                    Text(userData['username'] ?? "Người dùng",
-                                          style: const TextStyle(
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.w400,
-                                )
-                                    ),
                                   ],
                                 );
                               },
                             ),
-                            const SizedBox(width: 0.5),
-                          ],
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment:
-                              isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
-                              children: [
-                                if (!isMe)
-                                  Text(
-                                    messageData['senderName'] ?? '',
-                                    style: const TextStyle(
-                                      fontSize: 12,
-                                      color: Colors.grey,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                if (messageData.containsKey('replyTo'))
-                                  Container(
-                                    margin: const EdgeInsets.only(left: 50, bottom: 5),
-                                    padding: const EdgeInsets.all(8),
-                                    decoration: BoxDecoration(
-                                      color: Colors.grey[300],
-                                      borderRadius: BorderRadius.circular(5),
-                                    // padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                                    // decoration: BoxDecoration(
-                                    // color: Colors.grey[200],
-                                    // borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    child: Text(
-                                      messageData['replyTo'],
-                                      style: TextStyle(
-                                        fontStyle: FontStyle.italic,
-                                        color: Colors.black54,
-                                      ),
-                                    ),
-                                  ),
-                                isImage
-                                    ? Image.network(
-                                  messageData['content'],
-                                  width: 200,
-                                  height: 300,
-                                  fit: BoxFit.cover,
-                                )
-                                    : Container(
-                                  margin: const EdgeInsets.symmetric(
-                                    vertical: 5,
-                                    horizontal: 10,
-                                  ),
-                                  padding: const EdgeInsets.all(8),
-                                  constraints: BoxConstraints(
-                                    maxWidth:
-                                    MediaQuery.of(context).size.width * 0.75,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color:
-                                    isMe ? Colors.blue[100] : Colors.grey[300],
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: Column(
+                          Flexible(
+                            child: Container(
+                              margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+                              padding: const EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                color: isMe ? Colors.blue[100] : Colors.grey[300],
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: StreamBuilder<DocumentSnapshot>(
+                                stream: FirebaseFirestore.instance.collection('users').doc(senderId).snapshots(),
+                                builder: (context, snapshot) {
+                                  String senderName = 'Unknown';
+                                  if (snapshot.hasData) {
+                                    final userData = snapshot.data!.data() as Map<String, dynamic>;
+                                    senderName = userData['username'] ?? 'Unknown';
+                                  }
+                                  return Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      Text(
-                                        messageData['content'],
-                                        style: const TextStyle(fontSize: 14),
-                                      ),
-                                      Row(
-                                        mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          // Show timestamp
-                                          Text(
-                                            formatTimestamp(timestamp),
-                                            style: TextStyle(
-                                              fontSize: 12,
-                                              color: Colors.grey[600],
-                                            ),
+                                      if (!isMe)
+                                        Text(
+                                          senderName,
+                                          style: const TextStyle(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.bold,
                                           ),
-                                          if (isMe)
-                                            Text(
-                                              getStatusIcon(
-                                                  messageData['status'] ?? ''),
-                                              style: TextStyle(
-                                                fontSize: 12,
-                                                color: Colors.grey[600],
-                                              ),
-                                            ),
-                                        ],
+                                        ),
+                                      if (isImage)
+                                        Image.network(
+                                          messageData['content'],
+                                          width: 200,
+                                          height: 300,
+                                          fit: BoxFit.cover,
+                                        )
+                                      else
+                                        Text(
+                                          messageData['content'],
+                                          style: const TextStyle(fontSize: 14),
+                                        ),
+                                      const SizedBox(height: 5),
+                                      Text(
+                                        formatTimestamp(timestamp),
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: Colors.grey[600],
+                                        ),
                                       ),
                                     ],
-                                  ),
-                                ),
-                              ],
+                                  );
+                                },
+                              ),
                             ),
                           ),
                         ],
@@ -610,6 +581,7 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen> {
                     );
                   },
                 );
+
 
 
               },
@@ -681,6 +653,8 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen> {
     ),
     )
         : null,
+    ),
+  ]
     );
   }
 }
