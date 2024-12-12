@@ -4,12 +4,11 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_instagram_clone/auth/mainpage.dart';
 import 'package:flutter_instagram_clone/firebase_options.dart';
-import 'package:flutter_instagram_clone/screen/login_screen.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_instagram_clone/routes/chat_routes.dart';
 
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  print("Nhận thông báo khi ứng dụng ở chế độ nền: ${message.messageId}");
+  print("Get notified when the app is in the background: ${message.messageId}");
 }
 
 void main() async {

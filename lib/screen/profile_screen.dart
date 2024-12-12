@@ -130,7 +130,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: 3,
+      length: 2,
       child: Scaffold(
         backgroundColor: Colors.grey.shade100,
         body: SafeArea(
@@ -541,7 +541,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               tabs: [
                 Icon(Icons.grid_on),
                 Icon(Icons.video_collection),
-                Icon(Icons.person),
+                // Icon(Icons.person),
               ],
             ),
           ),
