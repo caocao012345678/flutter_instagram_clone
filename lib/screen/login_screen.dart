@@ -1,6 +1,9 @@
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_instagram_clone/data/firebase_service/firebase_auth.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import '../data/firebase_service/firestor.dart';
 
 class LoginScreen extends StatefulWidget {
   final VoidCallback show;
@@ -24,6 +27,13 @@ class _LoginScreenState extends State<LoginScreen> {
     email_F.dispose();
     password_F.dispose();
     super.dispose();
+  }
+
+  Future<void> _handleLoginSuccess(String userId) async {
+    final deviceToken = await FirebaseMessaging.instance.getToken();
+    if (deviceToken != null) {
+      await Firebase_Firestor().saveDeviceToken(userId, deviceToken);
+    }
   }
 
   @override
@@ -117,10 +127,20 @@ class _LoginScreenState extends State<LoginScreen> {
           });
 
           try {
+            // Gọi phương thức đăng nhập
             await Authentication().Login(
               email: email.text.trim(),
               password: password.text.trim(),
             );
+
+            // Lấy ID người dùng hiện tại
+            String userId = FirebaseAuth.instance.currentUser!.uid;
+
+            // Lưu token thiết bị vào Firestore
+            await _handleLoginSuccess(userId);
+
+            // Hiển thị thông báo thành công
+            _showSnackbar("Login successful!");
           } catch (e) {
             String errorMessage = e.toString().replaceAll("Exception:", "").trim();
             _showSnackbar(errorMessage);
@@ -152,6 +172,7 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
     );
   }
+
 
   Padding forget() {
     return Padding(

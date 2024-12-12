@@ -22,44 +22,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    // setupFirebaseMessaging();
   }
-
-  // Cấu hình Firebase Messaging
-  // void setupFirebaseMessaging() async {
-  //   messaging = FirebaseMessaging.instance;
-  //
-  //   // Yêu cầu quyền thông báo
-  //   NotificationSettings settings = await messaging.requestPermission(
-  //     alert: true,
-  //     badge: true,
-  //     sound: true,
-  //   );
-  //
-  //   if (settings.authorizationStatus == AuthorizationStatus.authorized) {
-  //     print("Quyền thông báo đã được cấp!");
-  //
-  //     messaging.getToken().then((token) {
-  //       print("Token người dùng: $token");
-  //     });
-  //
-  //     // Lắng nghe thông báo khi ứng dụng đang mở
-  //     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-  //       print("Nhận thông báo khi ứng dụng đang mở: ${message.notification?.title}");
-  //       _showNotificationDialog(
-  //         message.notification?.title ?? "Thông báo",
-  //         message.notification?.body ?? "Không có nội dung",
-  //       );
-  //     });
-  //
-  //     // Khi người dùng nhấn vào thông báo để mở ứng dụng
-  //     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-  //       print("Người dùng mở ứng dụng từ thông báo: ${message.notification?.title}");
-  //     });
-  //   } else {
-  //     print("Quyền thông báo bị từ chối.");
-  //   }
-  // }
 
   @override
   Widget build(BuildContext context) {

@@ -29,17 +29,10 @@ class _PostWidgetState extends State<PostWidget> {
     super.initState();
     currentUserId = _auth.currentUser!.uid;
   }
-  Future<int> _getCommentCount() async {
-    final snapshot = await FirebaseFirestore.instance
-        .collection('posts')
-        .doc(widget.snapshot['postId'])
-        .collection('comments')
-        .get();
-    return snapshot.docs.length;
-  }
   // Gửi thông báo khi có người like bài viết
   Future<void> _sendLikeNotification(String postId, String postOwnerUid) async {
     try {
+      // Thêm thông báo vào Firestore
       await FirebaseFirestore.instance.collection('notifications').add({
         'postId': postId,
         'senderId': currentUserId,
@@ -48,10 +41,35 @@ class _PostWidgetState extends State<PostWidget> {
         'timestamp': FieldValue.serverTimestamp(),
         'read': false,
       });
+
+      // Lấy thông tin người gửi
+      final senderSnapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(currentUserId)
+          .get();
+
+      if (!senderSnapshot.exists) {
+        print("Người dùng không tồn tại.");
+        return;
+      }
+
+      final senderData = senderSnapshot.data()!;
+      final senderName = senderData['username'];
+
+      // Lấy token và gửi thông báo đẩy
+      final deviceToken = await Firebase_Firestor().getUserDeviceToken(postOwnerUid);
+      if (deviceToken != null && deviceToken.isNotEmpty) {
+        await Firebase_Firestor().sendPushNotification(
+          deviceToken: deviceToken,
+          title: "New Like!",
+          body: "$senderName liked your post!",
+        );
+      }
     } catch (e) {
-      print("Error: $e");
+      print("Error sending notification: $e");
     }
   }
+
 
   // Like bài viết và gửi thông báo nếu cần
   void _likePost() {
