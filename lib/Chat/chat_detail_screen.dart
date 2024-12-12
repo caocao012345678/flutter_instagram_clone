@@ -33,11 +33,11 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   String getStatusIcon(String status) {
     switch (status) {
       case 'sent':
-        return ' Đã gửi🕑'; // Đã gửi
+        return ' Đã gửi'; // Đã gửi
       case 'delivered':
-        return 'Đã nhận✔️'; // Đã nhận
+        return 'Đã nhận'; // Đã nhận
       case 'read':
-        return 'Đã xem👁️'; // Đã xem
+        return 'Đã xem'; // Đã xem
       default:
         return 'Chưa gửi';
     }
@@ -418,7 +418,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                             ),
                             padding: const EdgeInsets.all(8),
                             constraints: BoxConstraints(
-                              maxWidth: MediaQuery.of(context).size.width * 0.75, // Độ rộng tối đa 75% màn hình
+                              maxWidth: MediaQuery.of(context).size.width * 0.42, // Độ rộng tối đa 75% màn hình
                             ),
                             decoration: BoxDecoration(
                               color: isMe ? Colors.blue[100] : Colors.grey[300],

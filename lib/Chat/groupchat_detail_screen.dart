@@ -8,6 +8,7 @@ import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 
+import 'groupchat_detail_information_screen.dart';
 import 'message_actions.dart';
 
 class GroupChatDetailScreen extends StatefulWidget {
@@ -42,6 +43,7 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen> {
   bool _isUploading = false;
 
 
+
   String getStatusIcon(String status) {
     switch (status) {
       case 'sent':
@@ -70,10 +72,14 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen> {
         .then((snapshot) {
       for (var doc in snapshot.docs) {
         doc.reference.update({'status': 'delivered'});
+
       }
     });
   }
-
+  bool isAdminOrMod() {
+    // Điều kiện kiểm tra nếu người dùng là trưởng nhóm hoặc phó nhóm
+    return true; // Thay logic kiểm tra quyền tại đây
+  }
   Future<void> _fetchPinnedMessages() async {
     DocumentSnapshot chatDoc = await _firestore.collection('chats').doc(
         widget.chatId).get();
@@ -116,10 +122,7 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen> {
     _fetchPinnedMessages();
   }
 
-  bool isAdminOrMod() {
-    // Điều kiện kiểm tra nếu người dùng là trưởng nhóm hoặc phó nhóm
-    return true; // Thay logic kiểm tra quyền tại đây
-  }
+
 
   void dispose() {
     _saveDraftMessage();
@@ -368,7 +371,7 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen> {
 
     String formatTimestamp(Timestamp? timestamp) {
       if (timestamp == null) {
-        return 'Unknown time'; // Fallback string for null timestamps
+        return 'Chưa gửi'; // Fallback string for null timestamps
       }
 
       final dateTime = timestamp.toDate();
@@ -389,20 +392,36 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen> {
 
     return Stack(
         children: [
-    Scaffold(
-      appBar: AppBar(
-        title: Row(
-          children: [
-            CircleAvatar(
-              backgroundImage: widget.groupImage.isNotEmpty
-                  ? NetworkImage(widget.groupImage)
-                  : AssetImage('assets/default_group.png') as ImageProvider,
+          Scaffold(
+            appBar: AppBar(
+              title: Row(
+                children: [
+                  CircleAvatar(
+                    backgroundImage: widget.groupImage.isNotEmpty
+                        ? NetworkImage(widget.groupImage)
+                        : AssetImage('assets/default_group.png') as ImageProvider,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(widget.groupName),
+                ],
+              ),
+              actions: [
+                IconButton(
+                  icon: Icon(Icons.info),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => GroupChatDetailInformationScreen(
+                          chatId: widget.chatId,
+                          currentUserId: widget.currentUserId,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ],
             ),
-            const SizedBox(width: 8),
-            Text(widget.groupName),
-          ],
-        ),
-      ),
       body: Column(
         children: [
           // Display pinned messages
