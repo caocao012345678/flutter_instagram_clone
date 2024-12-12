@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter_instagram_clone/util/image_cached.dart';
-import 'package:flutter_instagram_clone/data/firebase_service/firestor.dart';
 
 import '../data/firebase_service/storage.dart';
 
@@ -83,12 +82,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       appBar: AppBar(
         title: Text('Edit Profile'),
         backgroundColor: Colors.white,
-        actions: [
-          // IconButton(
-          //   icon: Icon(Icons.save, color: Colors.black),
-          //   onPressed: _saveChanges,
-          // ),
-        ],
       ),
       body: Padding(
         padding: EdgeInsets.all(16.0),
@@ -114,7 +107,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     child: _profileImageUrl != ''
                         ? SizedBox(
                             width: 120.w,
-                            height: 120.h,
+                            height: 130.h,
                             child: CachedImage(_profileImageUrl),
                           )
                         : Image.asset(

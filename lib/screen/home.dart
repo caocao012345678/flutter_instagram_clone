@@ -128,9 +128,8 @@ class _HomeScreenState extends State<HomeScreen> {
         elevation: 0,
         centerTitle: true,
         title: SizedBox(
-          width: 105.w,
-          height: 28.h,
-          child: Image.asset('assets/images/instagram.jpg'),
+          height: 40.h,
+          child: Image.asset('assets/images/Vibe_Logo.png'),
         ),
         actions: [
           IconButton(

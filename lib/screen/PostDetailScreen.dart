@@ -19,7 +19,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          "Chi tiết bài viết",
+          "Post details",
           style: TextStyle(color: Colors.black),
         ),
         backgroundColor: Colors.white,
@@ -34,7 +34,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
           }
           if (!snapshot.hasData || !snapshot.data!.exists) {
             return const Center(
-              child: Text("Bài viết không tồn tại."),
+              child: Text("The post does not exist."),
             );
           }
 

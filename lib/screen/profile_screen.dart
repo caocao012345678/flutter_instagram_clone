@@ -130,7 +130,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: 3,
+      length: 2,
       child: Scaffold(
         backgroundColor: Colors.grey.shade100,
         body: SafeArea(
@@ -208,17 +208,47 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       Navigator.pop(context);
                     },
                   ),
-                if (widget.Uid != _auth.currentUser?.uid) ...[
-                  SizedBox(width: 10.w),
-                ] else ...[
+                if (widget.Uid != _auth.currentUser?.uid)
+                  SizedBox(width: 10.w)
+                else
                   SizedBox(width: 15.w),
-                ],
-                Text(
-                  user.username,
-                  style: const TextStyle(
-                    fontSize: 23,
-                    fontWeight: FontWeight.bold,
-                  ),
+                StreamBuilder<DocumentSnapshot>(
+                  stream: FirebaseFirestore.instance
+                      .collection('users')
+                      .doc(widget.Uid)
+                      .snapshots(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Text(
+                        "...",
+                        style: TextStyle(
+                          fontSize: 23,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      );
+                    }
+
+                    if (snapshot.hasError || !snapshot.hasData || !snapshot.data!.exists) {
+                      return const Text(
+                        "Not Found",
+                        style: TextStyle(
+                          fontSize: 23,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      );
+                    }
+
+                    final userData = snapshot.data!.data() as Map<String, dynamic>;
+                    final username = userData['username'] ?? 'No Username';
+
+                    return Text(
+                      username,
+                      style: const TextStyle(
+                        fontSize: 23,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    );
+                  },
                 ),
                 const Spacer(),
                 if (widget.Uid == _auth.currentUser?.uid)
@@ -233,6 +263,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ],
             ),
           ),
+
           Row(
             children: [
               StreamBuilder(
@@ -320,27 +351,53 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 15.w),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  user.username,
-                  style: TextStyle(
-                    fontSize: 12.sp,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                SizedBox(height: 5.h),
-                Text(
-                  user.bio,
-                  style: TextStyle(
-                    fontSize: 12.sp,
-                    fontWeight: FontWeight.w300,
-                  ),
-                ),
-              ],
+            child: StreamBuilder<DocumentSnapshot>(
+              stream: FirebaseFirestore.instance
+                  .collection('users')
+                  .doc(widget.Uid) // Sử dụng Uid từ widget
+                  .snapshots(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(
+                    child: CircularProgressIndicator(),
+                  );
+                }
+
+                if (snapshot.hasError || !snapshot.hasData || !snapshot.data!.exists) {
+                  return const Text(
+                    "User not found",
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  );
+                }
+
+                final user = snapshot.data!.data() as Map<String, dynamic>;
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      user['username'] ?? 'No Username',
+                      style: TextStyle(
+                        fontSize: 12.sp,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    SizedBox(height: 5.h),
+                    Text(
+                      user['bio'] ?? 'No Bio',
+                      style: TextStyle(
+                        fontSize: 12.sp,
+                        fontWeight: FontWeight.w300,
+                      ),
+                    ),
+                  ],
+                );
+              },
             ),
           ),
+
           SizedBox(height: 20.h),
           Visibility(
             visible: !follow,
@@ -484,7 +541,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               tabs: [
                 Icon(Icons.grid_on),
                 Icon(Icons.video_collection),
-                Icon(Icons.person),
+                // Icon(Icons.person),
               ],
             ),
           ),

@@ -41,9 +41,13 @@ class _LoginScreenState extends State<LoginScreen> {
               children: [
                 SizedBox(height: 100.h),
                 Center(
-                  child: Image.asset('assets/images/logo.jpg'),
+                  child:
+                  SizedBox(
+                    height: 60.h,
+                    child: Image.asset('assets/images/Vibe_Logo.png'),
+                  ),
                 ),
-                SizedBox(height: 120.h),
+                SizedBox(height: 80.h),
                 Textfild(email, email_F, 'Email', Icons.email),
                 SizedBox(height: 15.h),
                 Textfild(password, password_F, 'Password', Icons.lock, isPassword: true),
@@ -104,7 +108,7 @@ class _LoginScreenState extends State<LoginScreen> {
       child: InkWell(
         onTap: () async {
           if (email.text.isEmpty || password.text.isEmpty) {
-            _showSnackbar("Vui lòng điền đầy đủ thông tin.");
+            _showSnackbar("Please fill in all information.");
             return;
           }
 
@@ -153,7 +157,9 @@ class _LoginScreenState extends State<LoginScreen> {
     return Padding(
       padding: EdgeInsets.only(left: 230.w),
       child: GestureDetector(
-        onTap: () {},
+        onTap: () {
+          _showSnackbar("Coming soon");
+        },
         child: Text(
           'Forgot password?',
           style: TextStyle(
