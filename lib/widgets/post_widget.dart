@@ -29,14 +29,6 @@ class _PostWidgetState extends State<PostWidget> {
     super.initState();
     currentUserId = _auth.currentUser!.uid;
   }
-  Future<int> _getCommentCount() async {
-    final snapshot = await FirebaseFirestore.instance
-        .collection('posts')
-        .doc(widget.snapshot['postId'])
-        .collection('comments')
-        .get();
-    return snapshot.docs.length;
-  }
   // Gửi thông báo khi có người like bài viết
   Future<void> _sendLikeNotification(String postId, String postOwnerUid) async {
     try {
