@@ -44,3 +44,4 @@ app.*.map.json
 /android/app/release
 
 assets/token.txt
+ServiceAccount.json
