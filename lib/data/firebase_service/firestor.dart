@@ -8,6 +8,8 @@ import 'package:flutter_instagram_clone/util/exeption.dart';
 import 'package:uuid/uuid.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+
+import '../../firebase_options.dart';
 class Firebase_Firestor {
   final FirebaseFirestore _firebaseFirestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -146,33 +148,64 @@ class Firebase_Firestor {
         .collection('users')
         .doc(_auth.currentUser!.uid)
         .get();
+
     List following = (snap.data()! as dynamic)['following'];
+
     try {
       if (following.contains(uid)) {
-        _firebaseFirestore
-            .collection('users')
-            .doc(_auth.currentUser!.uid)
-            .update({
+        // Bỏ theo dõi
+        await _firebaseFirestore.collection('users').doc(_auth.currentUser!.uid).update({
           'following': FieldValue.arrayRemove([uid])
         });
+
         await _firebaseFirestore.collection('users').doc(uid).update({
           'followers': FieldValue.arrayRemove([_auth.currentUser!.uid])
         });
       } else {
-        _firebaseFirestore
-            .collection('users')
-            .doc(_auth.currentUser!.uid)
-            .update({
+        // Theo dõi
+        await _firebaseFirestore.collection('users').doc(_auth.currentUser!.uid).update({
           'following': FieldValue.arrayUnion([uid])
         });
-        _firebaseFirestore.collection('users').doc(uid).update({
+
+        await _firebaseFirestore.collection('users').doc(uid).update({
           'followers': FieldValue.arrayUnion([_auth.currentUser!.uid])
         });
+
+        // **Lấy thông tin người theo dõi từ Firestore**
+        final userSnap = await _firebaseFirestore
+            .collection('users')
+            .doc(_auth.currentUser!.uid)
+            .get();
+        final followerName = (userSnap.data() as Map<String, dynamic>)['username'] ?? 'Someone';
+
+        // Lấy token thiết bị của người được theo dõi
+        final deviceToken = await getUserDeviceToken(uid);
+
+        if (deviceToken != null && deviceToken.isNotEmpty) {
+          await sendPushNotification(
+            deviceToken: deviceToken,
+            title: "New Follower!",
+            body: "$followerName has started following you!",
+            type: "follow",
+          );
+
+          // Lưu thông báo vào Firestore
+          await _firebaseFirestore.collection('notifications').add({
+            'senderId': _auth.currentUser!.uid,
+            'receiverId': uid,
+            'type': 'follow',
+            'message': "$followerName has started following you!",
+            'timestamp': FieldValue.serverTimestamp(),
+            'read': false,
+          });
+        }
       }
     } on Exception catch (e) {
-      print(e.toString());
+      print("Error updating status tracking: $e");
     }
   }
+
+
 
   Future<void> saveDeviceToken(String userId, String token) async {
     await _firestore.collection('users').doc(userId).update({
@@ -201,11 +234,14 @@ class Firebase_Firestor {
     required String deviceToken,
     required String title,
     required String body,
+    required String type, // Thêm loại thông báo
+    String? postId, // ID bài viết nếu có
   }) async {
+    final projectId = DefaultFirebaseOptions.currentPlatform.projectId;
     String accessToken = await getAccessToken();
 
     final url = Uri.parse(
-        'https://fcm.googleapis.com/v1/projects/testvisa-6edb9/messages:send');
+        'https://fcm.googleapis.com/v1/projects/${projectId}/messages:send');
 
     final response = await http.post(
       url,
@@ -219,6 +255,10 @@ class Firebase_Firestor {
           "notification": {
             "title": title,
             "body": body,
+          },
+          "data": {
+            "type": type,
+            "postId": type == "comment" || type == "like" ? postId ?? "" : ""
           },
           "android": {
             "priority": "high",
@@ -237,5 +277,6 @@ class Firebase_Firestor {
       print("Chi tiết lỗi: ${response.body}");
     }
   }
+
 
 }

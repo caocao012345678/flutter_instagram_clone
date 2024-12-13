@@ -44,4 +44,5 @@ app.*.map.json
 /android/app/release
 
 assets/token.txt
-ServiceAccount.json
+lib/firebase_options.dart
+assets/ServiceAccount.json

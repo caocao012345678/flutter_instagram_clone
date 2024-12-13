@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_instagram_clone/screen/explore.dart';
 import 'package:flutter_instagram_clone/screen/home.dart';
@@ -6,6 +7,7 @@ import 'package:flutter_instagram_clone/screen/profile_screen.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../Chat/chat_list_screen.dart';
+import '../screen/PostDetailScreen.dart';
 import '../screen/add_screen.dart';
 
 class Navigations_Screen extends StatefulWidget {
@@ -22,14 +24,12 @@ class _Navigations_ScreenState extends State<Navigations_Screen> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     pageController = PageController();
   }
 
   @override
   void dispose() {
-    // TODO: implement dispose
     super.dispose();
     pageController.dispose();
   }

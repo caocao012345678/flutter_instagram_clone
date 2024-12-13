@@ -27,9 +27,9 @@ class _CommentState extends State<Comment> {
     currentUserId = FirebaseAuth.instance.currentUser!.uid;
   }
 
-  Future<void> _sendCommentNotification(
-      String postId, String postOwnerUid, String commentText) async {
+  Future<void> _sendCommentNotification(String postId, String postOwnerUid, String commentText) async {
     try {
+      // Thêm thông báo vào Firestore
       await FirebaseFirestore.instance.collection('notifications').add({
         'postId': postId,
         'senderId': currentUserId,
@@ -39,11 +39,35 @@ class _CommentState extends State<Comment> {
         'timestamp': FieldValue.serverTimestamp(),
         'read': false,
       });
+
+      // Lấy thông tin người gửi
+      final senderSnapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(currentUserId)
+          .get();
+
+      if (!senderSnapshot.exists) {
+        print("Người dùng không tồn tại.");
+        return;
+      }
+
+      final senderData = senderSnapshot.data()!;
+      final senderName = senderData['username'];
+
+      // Lấy token và gửi thông báo đẩy
+      final deviceToken = await Firebase_Firestor().getUserDeviceToken(postOwnerUid);
+      if (deviceToken != null && deviceToken.isNotEmpty) {
+        await Firebase_Firestor().sendPushNotification(
+            deviceToken: deviceToken,
+            title: "New Comment!",
+            body: "$senderName comment your post: "+commentText,
+            type: "comment"
+        );
+      }
     } catch (e) {
-      print("Error sending comment notification: $e");
+      print("Error sending notification: $e");
     }
   }
-
 
   @override
   Widget build(BuildContext context) {

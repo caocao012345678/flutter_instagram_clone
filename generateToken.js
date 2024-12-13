@@ -3,7 +3,7 @@ const path = require('path');
 const { GoogleAuth } = require('google-auth-library');
 
 const auth = new GoogleAuth({
-    keyFile: './ServiceAccount.json',
+    keyFile: './assets/ServiceAccount.json',
     scopes: 'https://www.googleapis.com/auth/firebase.messaging',
 });
 

@@ -63,6 +63,7 @@ class _PostWidgetState extends State<PostWidget> {
           deviceToken: deviceToken,
           title: "New Like!",
           body: "$senderName liked your post!",
+          type: "like"
         );
       }
     } catch (e) {
