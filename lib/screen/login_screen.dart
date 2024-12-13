@@ -36,6 +36,22 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  Future<void> _forgotPassword() async {
+    final emailText = email.text.trim();  // Sử dụng biến email đã khai báo trước
+
+    if (emailText.isEmpty) {
+      _showSnackbar("Please enter your email.");
+      return;
+    }
+
+    try {
+      await FirebaseAuth.instance.sendPasswordResetEmail(email: emailText);
+      _showSnackbar("Password reset email sent!");
+    } on FirebaseAuthException catch (e) {
+      _showSnackbar("Error: ${e.message}");
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -178,9 +194,7 @@ class _LoginScreenState extends State<LoginScreen> {
     return Padding(
       padding: EdgeInsets.only(left: 230.w),
       child: GestureDetector(
-        onTap: () {
-          _showSnackbar("Coming soon");
-        },
+        onTap: _forgotPassword,
         child: Text(
           'Forgot password?',
           style: TextStyle(
