@@ -24,6 +24,23 @@ class _PostWidgetState extends State<PostWidget> {
   late String currentUserId;
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
+  String formatTimestamp(Timestamp? timestamp) {
+    if (timestamp == null) return 'Không xác định'; // Xử lý nếu giá trị null
+    final dateTime = timestamp.toDate();
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final yesterday = today.subtract(Duration(days: 1));
+
+    if (dateTime.isAfter(today)) {
+      return '${dateTime.hour}:${dateTime.minute.toString().padLeft(2, '0')}';
+    } else if (dateTime.isAfter(yesterday)) {
+      return 'Hôm qua ${dateTime.hour}:${dateTime.minute.toString().padLeft(2, '0')}';
+    } else {
+      return '${dateTime.day}/${dateTime.month}/${dateTime.year}';
+    }
+  }
+
+
   @override
   void initState() {
     super.initState();
@@ -393,7 +410,14 @@ class _PostWidgetState extends State<PostWidget> {
                 padding: EdgeInsets.only(top: 5.h),
                 child: Text("${widget.snapshot['caption']}", style: TextStyle(fontSize: 13.sp)),
               ),
-              Text(formatDate(widget.snapshot['time'].toDate(), [dd, '-', mm, '-', yyyy]), style: TextStyle(fontSize: 11.sp, color: Colors.grey)),
+
+              Text(
+                formatTimestamp(widget.snapshot['time']),
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey[600],
+                ),
+              ),
             ],
           ),
         ),
