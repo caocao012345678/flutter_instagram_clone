@@ -297,9 +297,10 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
       }
     }
 
-
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
+        backgroundColor: Colors.grey.shade100,
         title: GestureDetector(
           onTap: () {
             Navigator.push(

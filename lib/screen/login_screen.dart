@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_instagram_clone/data/firebase_service/firebase_auth.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../data/firebase_service/firestor.dart';
+import '../util/dialog.dart';
+import '../util/exeption.dart';
 
 class LoginScreen extends StatefulWidget {
   final VoidCallback show;
@@ -157,9 +159,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
             // Hiển thị thông báo thành công
             _showSnackbar("Login successful!");
-          } catch (e) {
-            String errorMessage = e.toString().replaceAll("Exception:", "").trim();
-            _showSnackbar(errorMessage);
+          } on exceptions catch (e) {
+            dialogBuilder(context, e.message);
           } finally {
             setState(() {
               isLoading = false;

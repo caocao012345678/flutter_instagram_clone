@@ -141,7 +141,9 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
+        backgroundColor: Colors.grey.shade100,
         title: const Text("Tạo nhóm"),
         actions: [
           IconButton(
