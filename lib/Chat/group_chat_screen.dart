@@ -16,7 +16,7 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
   void _createGroupChat() async {
     if (_selectedUserIds.length < 2) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Chọn ít nhất 2 người dùng để tạo nhóm!')),
+        const SnackBar(content: Text('Select at least 2 users to create a group!')),
       );
       return;
     }
@@ -39,7 +39,7 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text("Tạo nhóm chat"),
+        title: const Text("Create chat group"),
         actions: [
           IconButton(
             icon: const Icon(Icons.check),
@@ -59,7 +59,7 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
             itemBuilder: (context, index) {
               var user = snapshot.data!.docs[index];
               String userId = user.id;
-              String username = user['username'] ?? 'Người dùng';
+              String username = user['username'] ?? 'User';
               String avatarUrl = user['profile'] ?? '';
 
               return ListTile(

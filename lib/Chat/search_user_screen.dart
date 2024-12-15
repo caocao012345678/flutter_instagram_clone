@@ -17,7 +17,7 @@ class _SearchUserScreenState extends State<SearchUserScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Tìm kiếm người dùng"),
+        title: const Text("Search for users"),
       ),
       body: Column(
         children: [
@@ -25,7 +25,7 @@ class _SearchUserScreenState extends State<SearchUserScreen> {
             padding: const EdgeInsets.all(8.0),
             child: TextField(
               decoration: const InputDecoration(
-                hintText: "Tìm theo tên người dùng...",
+                hintText: "Search by username...",
                 prefixIcon: Icon(Icons.search),
               ),
               onChanged: (value) {
@@ -48,14 +48,14 @@ class _SearchUserScreenState extends State<SearchUserScreen> {
                 }
 
                 if (snapshot.data!.docs.isEmpty) {
-                  return const Center(child: Text("Không tìm thấy người dùng."));
+                  return const Center(child: Text("User not found."));
                 }
 
                 return ListView.builder(
                   itemCount: snapshot.data!.docs.length,
                   itemBuilder: (context, index) {
                     var user = snapshot.data!.docs[index];
-                    String username = user['username'] ?? 'Người dùng';
+                    String username = user['username'] ?? 'User';
                     String avatarUrl = user['profile'] ?? '';
 
                     return ListTile(

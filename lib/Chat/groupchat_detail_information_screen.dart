@@ -509,22 +509,22 @@ class _GroupChatDetailInformationScreenState
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text("Đổi tên nhóm"),
+          title: const Text("Rename group"),
           content: TextField(
             controller: controller,
-            decoration: const InputDecoration(hintText: "Tên nhóm mới"),
+            decoration: const InputDecoration(hintText: "New group name"),
           ),
           actions: <Widget>[
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text("Hủy"),
+              child: const Text("Cancel"),
             ),
             TextButton(
               onPressed: () {
                 _updateGroupName(controller.text);
                 Navigator.pop(context);
               },
-              child: const Text("Đổi tên"),
+              child: const Text("Rename"),
             ),
           ],
         );
@@ -540,13 +540,13 @@ class _GroupChatDetailInformationScreenState
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Bạn đã rời nhóm')),
+        const SnackBar(content: Text('You have left the group')),
       );
 
       Navigator.pop(context);
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Lỗi khi rời nhóm: $e")),
+        SnackBar(content: Text("Error when leaving group: $e")),
       );
     }
   }
@@ -554,8 +554,10 @@ class _GroupChatDetailInformationScreenState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text("Thông tin nhóm"),
+        backgroundColor: Colors.grey.shade100,
+        title: const Text("Group information"),
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -640,7 +642,7 @@ class _GroupChatDetailInformationScreenState
                 return ListTile(
                   title: Text(
                     member['username'] +
-                        (member['isAdmin'] ? " (Nhóm trưởng)" : ""),
+                        (member['isAdmin'] ? " (Admin)" : ""),
                   ),
                   trailing: isAdmin && !member['isAdmin']
                       ? IconButton(
@@ -656,7 +658,7 @@ class _GroupChatDetailInformationScreenState
             const Divider(),
             ListTile(
               leading: const Icon(Icons.groups),
-              title: const Text("Danh sách thành viên"),
+              title: const Text("Member List"),
               onTap: () => Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -669,7 +671,7 @@ class _GroupChatDetailInformationScreenState
             ),
             ListTile(
               leading: const Icon(Icons.person_add),
-              title: const Text("Thêm thành viên"),
+              title: const Text("Add member"),
               onTap: () => Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -681,7 +683,7 @@ class _GroupChatDetailInformationScreenState
             if (!isAdmin)
               ListTile(
                 leading: const Icon(Icons.exit_to_app),
-                title: const Text("Rời nhóm"),
+                title: const Text("Leave group"),
                 onTap: _leaveGroup,
               ),
           ],
@@ -698,7 +700,7 @@ class _GroupChatDetailInformationScreenState
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Đã xóa thành viên khỏi nhóm!')),
+        const SnackBar(content: Text('Member removed from group!')),
       );
       setState(() {
         members.removeWhere((member) => member['id'] == memberId);
@@ -706,7 +708,7 @@ class _GroupChatDetailInformationScreenState
     } catch (e) {
       print("Error removing member: $e");
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Lỗi khi xóa thành viên: $e")),
+        SnackBar(content: Text("Error while deleting member: $e")),
       );
     }
   }

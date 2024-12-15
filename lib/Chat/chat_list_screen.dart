@@ -53,7 +53,7 @@ class ChatListScreen extends StatelessWidget {
           }
 
           if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-            return const Center(child: Text("Không có cuộc trò chuyện nào."));
+            return const Center(child: Text("There is no conversation."));
           }
 
           return ListView.builder(
@@ -72,7 +72,7 @@ class ChatListScreen extends StatelessWidget {
 
               if (chatType == 'group') {
                 // Hiển thị nhóm chat
-                String groupName = chatMap?['groupName'] ?? 'Nhóm';
+                String groupName = chatMap?['groupName'] ?? 'Group';
                 String groupImage = chatMap?['groupImage'] ?? '';
 
                 return ListTile(
@@ -127,7 +127,7 @@ class ChatListScreen extends StatelessWidget {
                     }
 
                     var userData = userSnapshot.data!.data() as Map<String, dynamic>;
-                    String username = userData['username'] ?? 'Người dùng';
+                    String username = userData['username'] ?? 'User';
                     String avatarUrl = userData['profile'] ?? '';
 
                     return ListTile(

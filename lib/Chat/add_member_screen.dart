@@ -34,7 +34,7 @@ class _AddMemberScreenState extends State<AddMemberScreen> {
       'users': FieldValue.arrayUnion([userId]),
     });
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Đã thêm thành viên.')),
+      SnackBar(content: Text('Member added.')),
     );
     Navigator.pop(context);
   }
@@ -43,7 +43,7 @@ class _AddMemberScreenState extends State<AddMemberScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Thêm thành viên'),
+        title: const Text('Add member'),
       ),
       body: Column(
         children: [
@@ -52,7 +52,7 @@ class _AddMemberScreenState extends State<AddMemberScreen> {
             child: TextField(
               controller: _searchController,
               decoration: const InputDecoration(
-                labelText: 'Tìm kiếm người dùng',
+                labelText: 'Search for users',
                 border: OutlineInputBorder(),
               ),
               onSubmitted: _searchUsers,

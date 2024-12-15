@@ -313,7 +313,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
           child: StreamBuilder<DocumentSnapshot>(
             stream: FirebaseFirestore.instance.collection('users').doc(widget.otherUserId).snapshots(),
             builder: (context, snapshot) {
-              if (!snapshot.hasData) return const Text("Đang tải...");
+              if (!snapshot.hasData) return const Text("Loading...");
               final userData = snapshot.data!.data() as Map<String, dynamic>;
               return Row(
                 children: [
@@ -323,7 +323,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                         : const AssetImage('assets/default_avatar.png') as ImageProvider,
                   ),
                   const SizedBox(width: 10),
-                  Text(userData['username'] ?? "Người dùng"),
+                  Text(userData['username'] ?? "User"),
                 ],
               );
             },
@@ -377,7 +377,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                                 ClipboardData(text: messageData['content']),
                               );
                               ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Đã sao chép tin nhắn!')),
+                                const SnackBar(content: Text('Message copied!')),
                               );
                             }
                           },
@@ -512,7 +512,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                     child: TextField(
                       controller: _messageController,
                       decoration: InputDecoration(
-                        hintText: "Nhập tin nhắn...",
+                        hintText: "Enter message...",
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),

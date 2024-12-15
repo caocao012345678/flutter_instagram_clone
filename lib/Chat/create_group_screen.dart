@@ -41,21 +41,21 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
   Future<void> createGroupChat() async {
     if (_groupNameController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Vui lòng nhập tên nhóm!")),
+        const SnackBar(content: Text("Please enter a group name!")),
       );
       return;
     }
 
     if (_groupImage == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Vui lòng chọn ảnh nhóm!")),
+        const SnackBar(content: Text("Please select a group photo!")),
       );
       return;
     }
 
     if (selectedUserIds.length < 3) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Vui lòng chọn ít nhất 2 người dùng khác để tạo nhóm!")),
+        const SnackBar(content: Text("Please select at least 2 other users to create a group!")),
       );
       return;
     }
@@ -111,7 +111,7 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
     try {
       // Kiểm tra file trước khi tải lên
       if (!image.existsSync()) {
-        throw Exception("Tệp không tồn tại hoặc không hợp lệ.");
+        throw Exception("File does not exist or is invalid.");
       }
 
       // Tạo đường dẫn lưu ảnh trên Firebase Storage
@@ -128,12 +128,12 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
         String downloadUrl = await snapshot.ref.getDownloadURL();
         return downloadUrl;
       } else {
-        throw Exception("Tải ảnh lên không thành công.");
+        throw Exception("Image upload failed.");
       }
     } catch (e) {
       // Log chi tiết lỗi
-      print("Lỗi khi tải ảnh lên Firebase Storage: $e");
-      throw Exception("Lỗi khi tải ảnh lên Firebase Storage: $e");
+      print("Error uploading image to Firebase Storage: $e");
+      throw Exception("Error uploading image to Firebase Storage: $e");
     }
   }
 
@@ -144,7 +144,7 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
       backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.grey.shade100,
-        title: const Text("Tạo nhóm"),
+        title: const Text("Create a group"),
         actions: [
           IconButton(
             icon: const Icon(Icons.done),
@@ -182,7 +182,7 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
             child: TextField(
               controller: _groupNameController,
               decoration: const InputDecoration(
-                labelText: "Tên nhóm",
+                labelText: "Group name",
                 border: OutlineInputBorder(),
               ),
             ),
@@ -197,7 +197,7 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
                 }
 
                 if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                  return const Center(child: Text("Không có người dùng nào."));
+                  return const Center(child: Text("There are no users."));
                 }
 
                 // Lọc danh sách, loại bỏ người tạo nhóm
@@ -206,7 +206,7 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
                 }).toList();
 
                 if (filteredUsers.isEmpty) {
-                  return const Center(child: Text("Không còn người dùng nào để thêm vào nhóm."));
+                  return const Center(child: Text("There are no more users to add to the group."));
                 }
 
 
@@ -216,7 +216,7 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
                     var userDoc = filteredUsers[index];
                     var userData = userDoc.data() as Map<String, dynamic>;
                     String userId = userDoc.id;
-                    String username = userData['username'] ?? 'Người dùng';
+                    String username = userData['username'] ?? 'User';
                     String avatarUrl = userData['profile'] ?? '';
 
                     return StatefulBuilder(
