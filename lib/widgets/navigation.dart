@@ -20,6 +20,7 @@ class Navigations_Screen extends StatefulWidget {
 int _currentIndex = 0;
 
 class _Navigations_ScreenState extends State<Navigations_Screen> {
+
   late PageController pageController;
   final FirebaseAuth _auth = FirebaseAuth.instance;
   @override
@@ -90,7 +91,7 @@ class _Navigations_ScreenState extends State<Navigations_Screen> {
           AddScreen(),
           ChatListScreen(),
           ProfileScreen(
-            Uid: _auth.currentUser!.uid,
+            Uid: _auth.currentUser?.uid ?? '', // Trả về chuỗi rỗng nếu currentUser là null
           ),
         ],
       ),

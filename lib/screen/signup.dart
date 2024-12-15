@@ -12,7 +12,7 @@ import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:path_provider/path_provider.dart';
 
-import '../data/firebase_service/firestor.dart';
+import '../data/firebase_service/firestore.dart';
 
 class SignupScreen extends StatefulWidget {
   final VoidCallback show;

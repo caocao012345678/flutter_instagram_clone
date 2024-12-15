@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_instagram_clone/data/firebase_service/firestor.dart';
+import 'package:flutter_instagram_clone/data/firebase_service/firestore.dart';
 import 'package:flutter_instagram_clone/data/model/usermodel.dart';
 import 'package:flutter_instagram_clone/screen/post_screen.dart';
 import 'package:flutter_instagram_clone/util/image_cached.dart';

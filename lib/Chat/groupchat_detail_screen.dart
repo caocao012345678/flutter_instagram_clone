@@ -129,7 +129,7 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen> {
 
 
   void _onScroll() {
-    if (_scrollController.offset > 200) {
+   if (_scrollController.offset > 200) {
       setState(() {
         _showScrollToBottomButton = true;
       });

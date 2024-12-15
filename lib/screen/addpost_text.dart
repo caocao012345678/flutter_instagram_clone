@@ -1,6 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:flutter_instagram_clone/data/firebase_service/firestor.dart';
+import 'package:flutter_instagram_clone/data/firebase_service/firestore.dart';
 import 'package:flutter_instagram_clone/data/firebase_service/storage.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
