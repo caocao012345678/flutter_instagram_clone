@@ -54,7 +54,9 @@ class _MemberListScreenState extends State<MemberListScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
+        backgroundColor: Colors.grey.shade100,
         title: const Text('Member List'),
       ),
       body: StreamBuilder<DocumentSnapshot>( // Sử dụng StreamBuilder để lắng nghe thay đổi

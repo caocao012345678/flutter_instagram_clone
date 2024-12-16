@@ -136,6 +136,7 @@ class _PostWidgetState extends State<PostWidget> {
       context: context,
       builder: (context) {
         return AlertDialog(
+          backgroundColor: Colors.grey.shade200,
           title: const Text('Edit post caption'),
           content: TextField(
             controller: captionController,
@@ -211,6 +212,7 @@ class _PostWidgetState extends State<PostWidget> {
             style: TextStyle(fontSize: 13.sp),
           ),
           trailing: PopupMenuButton<String>(
+            color: Colors.grey.shade200,
             icon: const Icon(Icons.more_horiz),
             onSelected: (value) async {
               switch (value) {

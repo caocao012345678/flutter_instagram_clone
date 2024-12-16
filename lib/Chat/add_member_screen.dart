@@ -42,7 +42,9 @@ class _AddMemberScreenState extends State<AddMemberScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
+        backgroundColor: Colors.grey.shade100,
         title: const Text('Add member'),
       ),
       body: Column(
