@@ -107,7 +107,7 @@ class MessageActions {
           children: [
             ListTile(
               leading: Icon(Icons.reply),
-              title: Text('Trả lời tin nhắn'),
+              title: Text('Reply to message'),
               onTap: () {
                 Navigator.pop(context); // Đóng menu
                 onReply();
@@ -115,7 +115,7 @@ class MessageActions {
             ),
             ListTile(
               leading: Icon(Icons.undo),
-              title: Text('Thu hồi tin nhắn'),
+              title: Text('Recall message'),
               onTap: () async {
                 Navigator.pop(context);
                 await onRecall();
@@ -123,14 +123,14 @@ class MessageActions {
             ),
             ListTile(
               leading: Icon(Icons.copy),
-              title: Text(isImage ? 'Sao chép URL ảnh' : 'Sao chép tin nhắn'),
+              title: Text(isImage ? 'Copy image URL' : 'Copy message'),
               onTap: () async {
                 if (isImage) {
                   await _copyImageUrlToClipboard(context, contentOrUrl);
                 } else {
                   Clipboard.setData(ClipboardData(text: contentOrUrl));
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Đã sao chép tin nhắn!')),
+                    SnackBar(content: Text('Message copied!')),
                   );
                 }
                 Navigator.pop(context); // Đóng menu
@@ -139,7 +139,7 @@ class MessageActions {
             if (isImage)
               ListTile(
                 leading: Icon(Icons.save_alt),
-                title: Text('Lưu hình ảnh vào thư viện'),
+                title: Text('Save image to gallery'),
                 onTap: () async {
                   // await _saveImageToGallery(context, contentOrUrl);
                   Navigator.pop(context); // Đóng menu
@@ -157,11 +157,11 @@ class MessageActions {
     try {
       Clipboard.setData(ClipboardData(text: imageUrl));
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Đã sao chép URL của hình ảnh vào clipboard!')),
+        SnackBar(content: Text('Image URL copied to clipboard!')),
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Không thể sao chép URL: $e')),
+        SnackBar(content: Text('Cannot copy URL: $e')),
       );
     }
   }

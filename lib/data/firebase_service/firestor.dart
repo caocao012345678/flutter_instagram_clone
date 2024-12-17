@@ -1,14 +1,19 @@
-import 'dart:ffi';
+import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_instagram_clone/data/model/usermodel.dart';
 import 'package:flutter_instagram_clone/util/exeption.dart';
 import 'package:uuid/uuid.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
+import '../../firebase_options.dart';
 class Firebase_Firestor {
   final FirebaseFirestore _firebaseFirestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   Future<bool> CreateUser({
     required String email,
@@ -143,31 +148,135 @@ class Firebase_Firestor {
         .collection('users')
         .doc(_auth.currentUser!.uid)
         .get();
+
     List following = (snap.data()! as dynamic)['following'];
+
     try {
       if (following.contains(uid)) {
-        _firebaseFirestore
-            .collection('users')
-            .doc(_auth.currentUser!.uid)
-            .update({
+        // Bỏ theo dõi
+        await _firebaseFirestore.collection('users').doc(_auth.currentUser!.uid).update({
           'following': FieldValue.arrayRemove([uid])
         });
+
         await _firebaseFirestore.collection('users').doc(uid).update({
           'followers': FieldValue.arrayRemove([_auth.currentUser!.uid])
         });
       } else {
-        _firebaseFirestore
-            .collection('users')
-            .doc(_auth.currentUser!.uid)
-            .update({
+        // Theo dõi
+        await _firebaseFirestore.collection('users').doc(_auth.currentUser!.uid).update({
           'following': FieldValue.arrayUnion([uid])
         });
-        _firebaseFirestore.collection('users').doc(uid).update({
+
+        await _firebaseFirestore.collection('users').doc(uid).update({
           'followers': FieldValue.arrayUnion([_auth.currentUser!.uid])
         });
+
+        // **Lấy thông tin người theo dõi từ Firestore**
+        final userSnap = await _firebaseFirestore
+            .collection('users')
+            .doc(_auth.currentUser!.uid)
+            .get();
+        final followerName = (userSnap.data() as Map<String, dynamic>)['username'] ?? 'Someone';
+
+        // Lấy token thiết bị của người được theo dõi
+        final deviceToken = await getUserDeviceToken(uid);
+
+        if (deviceToken != null && deviceToken.isNotEmpty) {
+          await sendPushNotification(
+            deviceToken: deviceToken,
+            title: "New Follower!",
+            body: "$followerName has started following you!",
+            type: "follow",
+          );
+
+          // Lưu thông báo vào Firestore
+          await _firebaseFirestore.collection('notifications').add({
+            'senderId': _auth.currentUser!.uid,
+            'receiverId': uid,
+            'type': 'follow',
+            'message': "$followerName has started following you!",
+            'timestamp': FieldValue.serverTimestamp(),
+            'read': false,
+          });
+        }
       }
     } on Exception catch (e) {
-      print(e.toString());
+      print("Error updating status tracking: $e");
     }
   }
+
+
+
+  Future<void> saveDeviceToken(String userId, String token) async {
+    await _firestore.collection('users').doc(userId).update({
+      'deviceToken': token,
+    });
+  }
+
+  // Lấy token của người nhận
+  Future<String?> getUserDeviceToken(String userId) async {
+    final userDoc = await _firestore.collection('users').doc(userId).get();
+    return userDoc['deviceToken'];
+  }
+
+  Future<String> getAccessToken() async {
+    try {
+      final token = await rootBundle.loadString('assets/token.txt');
+      return token.trim();
+    } catch (e) {
+      print('Error reading token from file: $e');
+      throw Exception('Failed to read access token');
+    }
+  }
+
+  // Gửi thông báo đẩy
+  Future<void> sendPushNotification({
+    required String deviceToken,
+    required String title,
+    required String body,
+    required String type, // Thêm loại thông báo
+    String? postId, // ID bài viết nếu có
+  }) async {
+    final projectId = DefaultFirebaseOptions.currentPlatform.projectId;
+    String accessToken = await getAccessToken();
+
+    final url = Uri.parse(
+        'https://fcm.googleapis.com/v1/projects/${projectId}/messages:send');
+
+    final response = await http.post(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $accessToken',
+      },
+      body: jsonEncode({
+        "message": {
+          "token": deviceToken,
+          "notification": {
+            "title": title,
+            "body": body,
+          },
+          "data": {
+            "type": type,
+            "postId": type == "comment" || type == "like" ? postId ?? "" : ""
+          },
+          "android": {
+            "priority": "high",
+            "notification": {
+              "channel_id": "high_importance_channel",
+            }
+          }
+        }
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      print("Thông báo đẩy đã được gửi.");
+    } else {
+      print("Gửi thông báo đẩy thất bại: ${response.statusCode}");
+      print("Chi tiết lỗi: ${response.body}");
+    }
+  }
+
+
 }

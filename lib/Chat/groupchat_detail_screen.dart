@@ -254,7 +254,7 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen> {
 
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Có lỗi xảy ra khi tải ảnh: $e')),
+          SnackBar(content: Text('An error occurred while loading the image: $e')),
         );
       } finally {
         setState(() {
@@ -278,7 +278,7 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen> {
     if (currentUserId != senderId) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-            content: Text('Bạn không thể thu hồi tin nhắn của người khác.')),
+            content: Text('You cannot recall other peoples messages.')),
       );
       return;
     }
@@ -287,7 +287,7 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen> {
     if (difference.inMinutes > 1) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-            content: Text('Không thể thu hồi, tin nhắn đã gửi quá 1 phút.')),
+            content: Text('Cannot be recalled, message sent more than 1 minute ago.')),
       );
       return;
     }
@@ -298,10 +298,10 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen> {
         .doc(widget.chatId)
         .collection('messages')
         .doc(message.id)
-        .update({'content': 'Tin nhắn đã bị thu hồi', 'type': 'recalled'});
+        .update({'content': 'Message has been revoked', 'type': 'recalled'});
 
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Tin nhắn đã được thu hồi.')),
+      SnackBar(content: Text('The message has been recalled.')),
     );
   }
 
@@ -317,7 +317,7 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen> {
     try {
       final ref = FirebaseStorage.instance.refFromURL(imageUrl);
       final bytes = await ref.getData();
-      if (bytes == null) throw Exception('Không thể tải ảnh xuống');
+      if (bytes == null) throw Exception('Unable to download image');
 
       final directory = await getTemporaryDirectory();
       final imagePath = '${directory.path}/copied_image.png';
@@ -325,11 +325,11 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen> {
       await file.writeAsBytes(bytes);
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Hình ảnh đã được sao chép vào thiết bị!')),
+        SnackBar(content: Text('Image has been copied to the device!')),
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Không thể sao chép hình ảnh: $e')),
+        SnackBar(content: Text('Unable to copy image: $e')),
       );
     }
   }
@@ -344,7 +344,7 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen> {
         children: [
           Expanded(
             child: Text(
-              'Trả lời: $_replyingTo',
+              'Reply: $_replyingTo',
               style: TextStyle(
                 fontStyle: FontStyle.italic,
                 color: Colors.green[900], // Đổi màu chữ đậm hơn để nổi bật
@@ -371,7 +371,7 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen> {
 
     String formatTimestamp(Timestamp? timestamp) {
       if (timestamp == null) {
-        return 'Chưa gửi'; // Fallback string for null timestamps
+        return 'Not sent yet'; // Fallback string for null timestamps
       }
 
       final dateTime = timestamp.toDate();
@@ -382,7 +382,7 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen> {
       if (dateTime.isAfter(today)) {
         return '${dateTime.hour}:${dateTime.minute.toString().padLeft(2, '0')}';
       } else if (dateTime.isAfter(yesterday)) {
-        return 'Hôm qua ${dateTime.hour}:${dateTime.minute.toString().padLeft(2, '0')}';
+        return 'Yesterday ${dateTime.hour}:${dateTime.minute.toString().padLeft(2, '0')}';
       } else {
         return '${dateTime.day}/${dateTime.month}/${dateTime.year}';
       }
@@ -393,7 +393,9 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen> {
     return Stack(
         children: [
           Scaffold(
+            backgroundColor: Colors.white,
             appBar: AppBar(
+              backgroundColor: Colors.grey.shade100,
               title: Row(
                 children: [
                   CircleAvatar(
@@ -432,7 +434,7 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen> {
               child: Column(
                 children: [
                   const Text(
-                    "Tin nhắn đã ghim:",
+                    "Pinned messages:",
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
                   for (String messageId in pinnedMessages)
@@ -509,7 +511,7 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen> {
                                 ClipboardData(text: messageData['content']),
                               );
                               ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Đã sao chép tin nhắn!')),
+                                const SnackBar(content: Text('Message copied!')),
                               );
                             }
                           },
@@ -640,7 +642,7 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen> {
                     child: TextField(
                       controller: _messageController,
                       decoration: InputDecoration(
-                        hintText: "Nhập tin nhắn...",
+                        hintText: "Enter message...",
                         border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10)),
                         contentPadding: const EdgeInsets.symmetric(

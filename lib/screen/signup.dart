@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_instagram_clone/data/firebase_service/firebase_auth.dart';
@@ -9,6 +11,8 @@ import 'package:flutter_instagram_clone/util/imagepicker.dart';
 import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:path_provider/path_provider.dart';
+
+import '../data/firebase_service/firestor.dart';
 
 class SignupScreen extends StatefulWidget {
   final VoidCallback show;
@@ -40,6 +44,13 @@ class _SignupScreenState extends State<SignupScreen> {
     passwordConfirme.dispose();
     username.dispose();
     bio.dispose();
+  }
+
+  Future<void> _handleLoginSuccess(String userId) async {
+    final deviceToken = await FirebaseMessaging.instance.getToken();
+    if (deviceToken != null) {
+      await Firebase_Firestor().saveDeviceToken(userId, deviceToken);
+    }
   }
 
   Future<File> getDefaultImage() async {
@@ -172,6 +183,8 @@ class _SignupScreenState extends State<SignupScreen> {
               bio: bio.text.trim(),
               profile: _imageFile ?? defaultImage,
             );
+            String userId = FirebaseAuth.instance.currentUser!.uid;
+            await _handleLoginSuccess(userId);
             // Nếu đăng ký thành công
             Navigator.of(context).pop(); // Điều hướng đến trang khác
           } on exceptions catch (e) {

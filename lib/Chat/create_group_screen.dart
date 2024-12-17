@@ -8,6 +8,7 @@ import 'groupchat_detail_screen.dart';
 
 class CreateGroupScreen extends StatefulWidget {
   final String currentUserId; // Nhận userId của người tạo
+
   const CreateGroupScreen({Key? key, required this.currentUserId}) : super(key: key);
 
   @override
@@ -38,24 +39,41 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
     }
   }
 
+  Future<bool> isGroupNameTaken(String groupName) async {
+    QuerySnapshot snapshot = await _firestore
+        .collection('chats')
+        .where('type', isEqualTo: 'group')
+        .where('groupName', isEqualTo: groupName)
+        .get();
+    return snapshot.docs.isNotEmpty;
+  }
+
   Future<void> createGroupChat() async {
     if (_groupNameController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Vui lòng nhập tên nhóm!")),
+        const SnackBar(content: Text("Please enter a group name!")),
       );
       return;
     }
 
     if (_groupImage == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Vui lòng chọn ảnh nhóm!")),
+        const SnackBar(content: Text("Please select a group photo!")),
       );
       return;
     }
 
-    if (selectedUserIds.length < 3) {
+    if (selectedUserIds.length < 2) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Vui lòng chọn ít nhất 2 người dùng khác để tạo nhóm!")),
+        const SnackBar(content: Text("Please select at least one other user to create a group!")),
+      );
+      return;
+    }
+
+    bool groupNameExists = await isGroupNameTaken(_groupNameController.text.trim());
+    if (groupNameExists) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Group name already exists! Please choose a different name.")),
       );
       return;
     }
@@ -80,7 +98,6 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
         'pinnedMessages': [], // Danh sách tin nhắn đã ghim
       });
 
-
       // Chuyển hướng sang màn hình chi tiết nhóm
       Navigator.pushReplacement(
         context,
@@ -89,7 +106,8 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
             chatId: groupDoc.id,
             groupName: _groupNameController.text.trim(),
             groupImage: groupImageUrl,
-            currentUserId: widget.currentUserId, otherUserId: '',
+            currentUserId: widget.currentUserId,
+            otherUserId: '',
           ),
         ),
       );
@@ -104,150 +122,162 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
     }
   }
 
-
-
-
   Future<String> uploadImageToStorage(File image) async {
     try {
-      // Kiểm tra file trước khi tải lên
-      if (!image.existsSync()) {
-        throw Exception("Tệp không tồn tại hoặc không hợp lệ.");
-      }
-
-      // Tạo đường dẫn lưu ảnh trên Firebase Storage
       String fileName = 'group_images/${DateTime.now().millisecondsSinceEpoch}.jpg';
       Reference ref = FirebaseStorage.instance.ref().child(fileName);
 
-      // Tải ảnh lên
       UploadTask uploadTask = ref.putFile(image);
       TaskSnapshot snapshot = await uploadTask;
 
-      // Kiểm tra trạng thái tải lên
       if (snapshot.state == TaskState.success) {
-        // Lấy URL của ảnh sau khi tải lên
-        String downloadUrl = await snapshot.ref.getDownloadURL();
-        return downloadUrl;
+        return await snapshot.ref.getDownloadURL();
       } else {
-        throw Exception("Tải ảnh lên không thành công.");
+        throw Exception("Image upload failed.");
       }
     } catch (e) {
-      // Log chi tiết lỗi
-      print("Lỗi khi tải ảnh lên Firebase Storage: $e");
-      throw Exception("Lỗi khi tải ảnh lên Firebase Storage: $e");
+      throw Exception("Error uploading image to Firebase Storage: $e");
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Tạo nhóm"),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.done),
-            onPressed: _isCreatingGroup ? null : createGroupChat,
-          ),
-        ],
-      ),
-      body: _isCreatingGroup
-          ? const Center(child: CircularProgressIndicator())
-          : Column(
-        children: [
-          GestureDetector(
-            onTap: pickGroupImage,
-            child: Container(
-              margin: const EdgeInsets.all(16.0),
-              height: 120,
-              width: 120,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                image: _groupImage != null
-                    ? DecorationImage(
-                  image: FileImage(_groupImage!),
-                  fit: BoxFit.cover,
-                )
-                    : null,
-                color: Colors.grey[300],
-              ),
-              child: _groupImage == null
-                  ? const Icon(Icons.add_a_photo, size: 40, color: Colors.grey)
-                  : null,
+        appBar: AppBar(
+          title: const Text("Create a group"),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.done),
+              onPressed: _isCreatingGroup ? null : createGroupChat,
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: TextField(
-              controller: _groupNameController,
-              decoration: const InputDecoration(
-                labelText: "Tên nhóm",
-                border: OutlineInputBorder(),
+          ],
+        ),
+        body: _isCreatingGroup
+            ? const Center(child: CircularProgressIndicator())
+            : Column(
+            children: [
+              GestureDetector(
+                onTap: pickGroupImage,
+                child: Container(
+                  margin: const EdgeInsets.all(16.0),
+                  height: 120,
+                  width: 120,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    image: _groupImage != null
+                        ? DecorationImage(
+                      image: FileImage(_groupImage!),
+                      fit: BoxFit.cover,
+                    )
+                        : null,
+                    color: Colors.grey[300],
+                  ),
+                  child: _groupImage == null
+                      ? const Icon(
+                      Icons.add_a_photo, size: 40, color: Colors.grey)
+                      : null,
+                ),
               ),
-            ),
-          ),
-          const SizedBox(height: 16),
-          Expanded(
-            child: StreamBuilder<QuerySnapshot>(
-              stream: _firestore.collection('users').snapshots(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                }
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: TextField(
+                  controller: _groupNameController,
+                  decoration: const InputDecoration(
+                    labelText: "Group name",
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+              ),
 
-                if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                  return const Center(child: Text("Không có người dùng nào."));
-                }
+              const SizedBox(height: 16),
+              Expanded(
+                child: Column(
+                  children: [
+                    // Hiển thị thông tin của nhóm trưởng
+                    ListTile(
+                      leading: CircleAvatar(
+                        backgroundImage: const AssetImage(
+                            'assets/default_avatar.png'),
+                      ),
+                      title: const Text("Bạn (Trưởng nhóm)"),
+                      subtitle: const Text("Không thể loại bỏ"),
+                    ),
+                    const Divider(),
+                    Expanded(
+                      child: StreamBuilder<QuerySnapshot>(
+                        stream: _firestore.collection('users').snapshots(),
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            return const Center(
+                                child: CircularProgressIndicator());
+                          }
 
-                // Lọc danh sách, loại bỏ người tạo nhóm
-                List<QueryDocumentSnapshot> filteredUsers = snapshot.data!.docs.where((doc) {
-                  return doc.id != widget.currentUserId; // Loại người tạo nhóm
-                }).toList();
+                          if (!snapshot.hasData ||
+                              snapshot.data!.docs.isEmpty) {
+                            return const                                                                                                                                              Center(child: Text(
+                                "Không có người dùng nào khả dụng."));
+                          }
 
-                if (filteredUsers.isEmpty) {
-                  return const Center(child: Text("Không còn người dùng nào để thêm vào nhóm."));
-                }
+                          // Lọc danh sách để loại trừ currentUserId
+                          List<QueryDocumentSnapshot> filteredUsers = snapshot
+                              .data!.docs.where((doc) {
+                            return doc.id != widget.currentUserId;
+                          }).toList();
 
+                          if (filteredUsers.isEmpty) {
+                            return const Center(child: Text(
+                                "Không có người dùng nào khác."));
+                          }
 
-                return ListView.builder(
-                  itemCount: filteredUsers.length,
-                  itemBuilder: (context, index) {
-                    var userDoc = filteredUsers[index];
-                    var userData = userDoc.data() as Map<String, dynamic>;
-                    String userId = userDoc.id;
-                    String username = userData['username'] ?? 'Người dùng';
-                    String avatarUrl = userData['profile'] ?? '';
+                          return ListView.builder(
+                            itemCount: filteredUsers.length,
+                            itemBuilder: (context, index) {
+                              var userDoc = filteredUsers[index];
+                              var userData = userDoc.data() as Map<
+                                  String,
+                                  dynamic>;
+                              String userId = userDoc.id;
+                              String username = userData['username'] ??
+                                  'Người dùng';
+                              String avatarUrl = userData['profile'] ?? '';
 
-                    return StatefulBuilder(
-                      builder: (context, setStateCheckbox) {
-                        return ListTile(
-                          leading: CircleAvatar(
-                            backgroundImage: avatarUrl.isNotEmpty
-                                ? NetworkImage(avatarUrl)
-                                : const AssetImage('assets/default_avatar.png') as ImageProvider,
-                          ),
-                          title: Text(username),
-                          trailing: Checkbox(
-                            value: selectedUserIds.contains(userId),
-                            onChanged: (bool? value) {
-                              setStateCheckbox(() {
-                                if (value == true) {
-                                  selectedUserIds.add(userId);
-                                } else {
-                                  selectedUserIds.remove(userId);
-                                }
-                              });
+                              return StatefulBuilder(
+                                builder: (context, setStateCheckbox) {
+                                  return ListTile(
+                                    leading: CircleAvatar(
+                                      backgroundImage: avatarUrl.isNotEmpty
+                                          ? NetworkImage(avatarUrl)
+                                          : const AssetImage(
+                                          'assets/default_avatar.png') as ImageProvider,
+                                    ),
+                                    title: Text(username),
+                                    trailing: Checkbox(
+                                      value: selectedUserIds.contains(userId),
+                                      onChanged: (bool? value) {
+                                        setStateCheckbox(() {
+                                          if (value == true) {
+                                            selectedUserIds.add(userId);
+                                          } else {
+                                            selectedUserIds.remove(userId);
+                                          }
+                                        });
+                                      },
+                                    ),
+                                  );
+                                  },
+                              );
                             },
-                          ),
-                        );
-                      },
-                    );
-                  },
-                );
-              },
-            ),
-          ),
-        ],
-      ),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              )
+            ]
+        )
     );
   }
 }
+

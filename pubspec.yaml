@@ -65,4 +65,6 @@ flutter:
     - assets/images/
     - assets/default_avatar.png
     - assets/default_group_avatar.png
+    - assets/token.txt
+    - assets/ServiceAccount.json
 

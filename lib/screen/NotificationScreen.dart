@@ -16,6 +16,22 @@ class _NotificationScreenState extends State<NotificationScreen> {
   final FirebaseFirestore _firebaseFirestore = FirebaseFirestore.instance;
   final String currentUserId = FirebaseAuth.instance.currentUser!.uid;
 
+  String formatTimestamp(Timestamp? timestamp) {
+    if (timestamp == null) return 'Không xác định'; // Xử lý nếu giá trị null
+    final dateTime = timestamp.toDate();
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final yesterday = today.subtract(Duration(days: 1));
+
+    if (dateTime.isAfter(today)) {
+      return '${dateTime.hour}:${dateTime.minute.toString().padLeft(2, '0')}';
+    } else if (dateTime.isAfter(yesterday)) {
+      return 'Hôm qua ${dateTime.hour}:${dateTime.minute.toString().padLeft(2, '0')}';
+    } else {
+      return '${dateTime.day}/${dateTime.month}/${dateTime.year}';
+    }
+  }
+
   /// Đánh dấu thông báo là đã đọc
   Future<void> _markAsRead(String notificationId) async {
     try {
@@ -31,6 +47,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
         title: const Text(
           'Notification',
@@ -107,7 +124,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                       ),
                     ),
                     subtitle: Text(
-                      _formatTimestamp(notification['timestamp']),
+                      formatTimestamp(notification['timestamp']),
                       style: const TextStyle(
                           fontSize: 12, color: Colors.grey),
                     ),

@@ -41,7 +41,7 @@ class _MemberListScreenState extends State<MemberListScreen> {
         });
 
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Đã xóa thành viên khỏi nhóm")),
+          const SnackBar(content: Text("Member removed from group")),
         );
       }
     } catch (e) {
@@ -54,8 +54,10 @@ class _MemberListScreenState extends State<MemberListScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('Danh sách thành viên'),
+        backgroundColor: Colors.grey.shade100,
+        title: const Text('Member List'),
       ),
       body: StreamBuilder<DocumentSnapshot>( // Sử dụng StreamBuilder để lắng nghe thay đổi
         stream: _firestore.collection('chats').doc(widget.chatId).snapshots(),
@@ -69,7 +71,7 @@ class _MemberListScreenState extends State<MemberListScreen> {
           }
 
           if (!snapshot.hasData || !snapshot.data!.exists) {
-            return const Center(child: Text("Nhóm không tồn tại"));
+            return const Center(child: Text("Group does not exist"));
           }
 
           var groupData = snapshot.data!.data() as Map<String, dynamic>;
@@ -91,7 +93,7 @@ class _MemberListScreenState extends State<MemberListScreen> {
                     }
 
                     if (userSnapshot.hasError) {
-                      return Center(child: Text("Lỗi: ${userSnapshot.error}"));
+                      return Center(child: Text("Error: ${userSnapshot.error}"));
                     }
 
                     if (!userSnapshot.hasData || !userSnapshot.data!.exists) {
@@ -99,7 +101,7 @@ class _MemberListScreenState extends State<MemberListScreen> {
                     }
 
                     var userData = userSnapshot.data!.data() as Map<String, dynamic>;
-                    String username = userData['username'] ?? 'Người dùng';
+                    String username = userData['username'] ?? 'User';
                     String avatarUrl = userData['profile'] ?? '';
 
                     return ListTile(
@@ -114,7 +116,7 @@ class _MemberListScreenState extends State<MemberListScreen> {
                           if (userId == adminId) ...[
                             const SizedBox(width: 8),
                             const Text(
-                              'Nhóm trưởng',
+                              'Admin',
                               style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold),
                             ),
                           ],
